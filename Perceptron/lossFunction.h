@@ -8,53 +8,53 @@ enum class LOSSFUNC
 	CROSSENTROPHY
 };
 
-typedef double(*evalFunctype)(const vector<double>& A, const vector<double>& B);
-typedef double(*diffFunctype)(const vector<double>& A, const vector<double>& B,int index);
+typedef float(*evalFunctype)(const vector<float>& A, const vector<float>& B);
+typedef float(*diffFunctype)(const vector<float>& A, const vector<float>& B,int index);
 //diffrentiation is done for A not for B ,watch out
-double evalMse(const vector<double>& A, const vector<double>& B)
+float evalMse(const vector<float>& A, const vector<float>& B)
 {
 	int sizeA, sizeB;
 	sizeA = A.size();
 	sizeB = B.size();
-	double result = 0;
+	float result = 0;
 	assert(sizeA == sizeB);
 	for (int i = 0; i < sizeA; i++)
 	{
-		double temp = A[i] - B[i];
+		float temp = A[i] - B[i];
 		result += temp*temp;
 	}
 	return result;
 }
-double diffMse(const vector<double>& A, const vector<double>& B, int index)
+float diffMse(const vector<float>& A, const vector<float>& B, int index)
 {
 	int sizeA, sizeB;
 	sizeA = A.size();
 	sizeB = B.size();
-	double result = 0;
+	float result = 0;
 	assert(sizeA == sizeB);
 	assert(index >= 0 && index < sizeA);
 	return 2*(A[index] - B[index]);
 }
-double evalCrossentrophy(const vector<double>& A, const vector<double>& B)
+float evalCrossentrophy(const vector<float>& A, const vector<float>& B)
 {
 	int sizeA, sizeB;
 	sizeA = A.size();
 	sizeB = B.size();
-	double result = 0;
+	float result = 0;
 	assert(sizeA == sizeB);
 	for (int i = 0; i < sizeA; i++)
 	{
-		double temp = A[i] * log(B[i]) + (1 - A[i])*log(1 - B[i]);
+		float temp = A[i] * log(B[i]) + (1 - A[i])*log(1 - B[i]);
 		result += -temp;
 	}
 	return result;
 }
-double diffCrossentrophy(const vector<double>& A, const vector<double>& B, int index)
+float diffCrossentrophy(const vector<float>& A, const vector<float>& B, int index)
 {
 	int sizeA, sizeB;
 	sizeA = A.size();
 	sizeB = B.size();
-	double result = 0;
+	float result = 0;
 	assert(sizeA == sizeB);
 	assert(index >= 0 && index < sizeA);
 	return  (A[index] - B[index])/(A[index]*(1-A[index]));

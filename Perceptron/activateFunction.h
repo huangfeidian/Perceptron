@@ -6,60 +6,64 @@ enum class ACTIVATEFUNC
 	IDENTITY,
 	RECTLINEAR
 };
-typedef double(*functype)(double);
-double evalTanh(double input)
+typedef float(*functype)(float);
+float evalTanh(float input)
 {
-	double temp = std::exp(2*input);
-	double result = 1 - 2 / (temp + 1);
+	float temp = std::exp(2*input);
+	float result = 1 - 2 / (temp + 1);
 	return result;
 }
-double diffTanh(double input)
+float diffTanh(float input)
 {
 	return 1 - input*input;
 }
-double evalSigmoid(double input)
+float evalSigmoid(float input)
 {
-	double temp = std::exp(input);
-	double result = 1 / (1 + temp);
+	float temp = std::exp(input);
+	float result = 1 / (1 + temp);
 	return result;
 }
-double diffSigmoid(double input)
+float diffSigmoid(float input)
 {
 	return (1 - input)*input;
 }
-double evalIdentity(double input)
+float evalIdentity(float input)
 {
 	return input;
 }
-double diffIdentity(double input)
+float diffIdentity(float input)
 {
 	return 1;
 }
-double evalRectifiedLinear(double input)
+float evalRectifiedLinear(float input)
 {
 	return input > 0.0 ? input : 0.0;
 }
-double diffRectifiedLinear(double input)
+float diffRectifiedLinear(float input)
 {
 	return input > 0.0 ? 1: 0.0;
 }
 functype evalFunc[4] = { &evalTanh, &evalSigmoid ,&evalIdentity,&evalRectifiedLinear};
 functype diffFunc[4] = { &diffTanh, &diffSigmoid, &diffIdentity, &diffRectifiedLinear };
-template< ACTIVATEFUNC Funcindex> class activateFunc
+ class activateFunc
 {
 private:
-	functype currentEvalFunc = evalFunc[(int)Funcindex];
-	functype currentDiffFunc = diffFunc[(int) Funcindex];
+	functype currentEvalFunc;
+	functype currentDiffFunc;
 public:
-	double operator()(double input)const
+	activateFunc(ACTIVATEFUNC currentFuncType):currentDiffFunc(diffFunc[(int)currentFuncType]),currentEvalFunc(evalFunc[(int)currentFuncType])
+	{
+
+	}
+	float operator()(float input)const
 	{
 		return (*currentEvalFunc)(input);
 	}
-	double eval(double input)const
+	float eval(float input)const
 	{
 		return (*currentEvalFunc)(input);
 	}
-	double diff(double input)const
+	float diff(float input)const
 	{
 		return (*currentDiffFunc)(input);
 	}
