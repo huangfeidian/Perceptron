@@ -66,9 +66,9 @@ public:
 	{
 		parallel_for(0, inputDim, [&](int i)
 		{
-			for (auto singleConnection : weightFromInput[i])//make use of sse
+			for (int j = 0; j < outputDim; j++)
 			{
-				connectWeight[i][singleConnection.first] -= isRemained[i] * stepSize*weightGradient[i][singleConnection.first];
+				connectWeight[i][j] -= isRemained[i] * stepSize*weightGradient[i][j];
 			}
 		});
 	}

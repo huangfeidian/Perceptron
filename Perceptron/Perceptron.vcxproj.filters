@@ -21,6 +21,30 @@
     <ClInclude Include="layer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="inputs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vectorize.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="connection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="convolution.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fullConnect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="network.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mnistParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">

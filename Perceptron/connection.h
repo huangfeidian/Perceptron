@@ -1,6 +1,8 @@
 #include "layer.h"
 #include "vectorize.h"
 #include <ppl.h>
+#include <algorithm>
+using namespace std;
 class connection
 {
 public:
@@ -64,7 +66,7 @@ public:
 			}
 		}
 	}
-	virtual void addConnection(int fromIndex, int toIndex, float weight)
+	inline virtual void addConnection(int fromIndex, int toIndex, float weight)
 	{
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;
@@ -108,20 +110,16 @@ public:
 	}
 	virtual void updateBias(float stepSize, const vector<float>& isRemained)
 	{
-		parallel_for( 0, outputDim,[&](int i)//we can parallize it and sse 
-		{
-			bias[i] -= stepSize* isRemained[i] * biasGradient[i];
-		});
+		transform(isRemained.cbegin(), isRemained.cend(), biasGradient.cbegin(), bias.begin(), [&](int a, int b){return a*b*stepSize; });
 	}
 	virtual void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
 		parallel_for ( 0, inputDim,[&](int i)
 		{
-			for (auto singleConnection : weightFromInput[i])//make use of sse
+			for_each(weightFromInput[i].cbegin(), weightFromInput[i].cend(), [&](const pair<int, int>& in)
 			{
-				connectWeight[i][singleConnection.first] -= isRemained[i] * stepSize*weightGradient[i][singleConnection.first];
-			}			
+				connectWeight[i][in.first] -= isRemained[i] * stepSize*weightGradient[i][in.second];
+			});
 		});
 	}
-
 };
