@@ -4,6 +4,8 @@
 #include <list>
 #include <random>
 #include <assert.h>
+#include <ppl.h>
+using namespace concurrency;
 using std::vector;
 using std::map;
 using std::list;
@@ -14,7 +16,7 @@ public:
 	//current.inputvalue[j]=sum(connection.connectionWeight[i][j]*connection.isConnected[i][j]*pre.outputValue[i]*pre.is_maskerd[i])
 	std::vector<float>  outputValue;
 	//outputValue[i]=current.currentFunc(current.inputValue[i]+current.bias[i])
-	std::vector<int>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
+	std::vector<float>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
 	int remainNumber ;//the number of nodes to dropout
 	std::vector<float>  weightGradient;//current.weightGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
 	std::vector<float>  delta;//delta[i]=weightGradient[i]*currentFunc.diff(outputValue[i])
@@ -27,6 +29,7 @@ public:
 		outputValue.reserve(inDim);
 		weightGradient.reserve(inDim);
 		delta.reserve(inDim);
+		//and other initialtion
 	}
 	void dropoutNodes(int numberToRemain)
 	{
@@ -38,16 +41,16 @@ public:
 		}
 		std::default_random_engine dre;
 		std::shuffle(forShuffle.begin(), forShuffle.end(), dre);
-		for (int i = 0; i < numberToRemain; i++)
+		for (int i = 0; i < dim-numberToRemain; i++)
 		{
-			isRemained[forShuffle[i]] = 1;
+			isRemained[forShuffle[i]] = 0.0;
 		}
 	}
 	void dropoutRestore()
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			isRemained[i] = 1;
+			isRemained[i] = 1.0;
 		}
 		remainNumber = dim;
 	}
