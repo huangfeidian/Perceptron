@@ -9,15 +9,18 @@ public:
 	std::vector<std::vector<float>> connectWeight;//the weights of connections between layers,currently i don't care the sparse before this demo works
 	const int inputDim;
 	const int outputDim;
-	std::vector<std::vector<float>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
-	std::vector<std::vector<float>> weightGradient;//for the weightGradient of the weight
+	std::vector<std::vector<int>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
+	std::vector<std::vector<float>> weightGradient;//for the Gradient of the weight
+	std::vector<std::vector<float>> batchWeightGradient;//for the batch sum of  Gradient of the weight
 	std::vector<std::map<int, int>> weightFromInput;//weightFromInput[i][j]=connectWeight[i][j]
 	std::vector<std::map<int, int>> weightToOutput;//weightToOutput[i][j]=connecWeight[j][i]
 
 	int totalConnections;//sum of  all isConnected[i][j]!=0
 	std::vector<float>  bias;// for the bias
 	std::vector<float>  biasGradient;//biasGradient[i]=delta[i]
-	connection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim)
+	std::vector<float>  batchBiasGradient;//batch sum of biasGradient[i]
+
+	connection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), bias(outDim, 0), biasGradient(outDim, 0), batchBiasGradient(outDim, 0), totalConnections(0)
 	{
 		connectWeight.reserve(inDim);
 		isConnected.reserve(inDim);
@@ -25,9 +28,6 @@ public:
 
 		weightFromInput.reserve(inDim);
 		weightToOutput.reserve(outDim);
-		bias.reserve(inDim);
-		biasGradient.reserve(inDim);
-		totalConnections = 0;
 		for (int i = 0; i < inDim; i++)
 		{
 			connectWeight[i].reserve(outDim);
@@ -45,11 +45,11 @@ public:
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				isConnected[i][j] = inputIsConnected[i][j] == true ? 1.0 : 0.0;
+				isConnected[i][j] = inputIsConnected[i][j] == true ? 1 : 0;
 			}
 		}
 	}
-	virtual void initWeight()
+	void initWeight()
 	{
 		std::default_random_engine dre;
 		std::uniform_real_distribution<float> di(-1.0, 1.0);
@@ -58,7 +58,7 @@ public:
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				if (isConnected[i][j] == 1.0)
+				if (isConnected[i][j] == 1)
 				{
 					tempWeight = di(dre);
 					addConnection(i, j, tempWeight);
@@ -66,11 +66,11 @@ public:
 			}
 		}
 	}
-	inline virtual void addConnection(int fromIndex, int toIndex, float weight)
+	inline void addConnection(int fromIndex, int toIndex, float weight)
 	{
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;
-		isConnected[fromIndex][toIndex] = 1.0;
+		isConnected[fromIndex][toIndex] = 1;
 		weightFromInput[fromIndex][toIndex] = toIndex;
 		weightToOutput[toIndex][fromIndex] = fromIndex;
 	}
@@ -89,6 +89,7 @@ public:
 	}
 	virtual void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient)
 	{
+		//we can gain more parallel
 		parallel_for(0,  inputDim,[&](int i)//for the layer nodes
 		{
 			float propagateResult = 0;
@@ -99,18 +100,25 @@ public:
 			preLayerGradient[i] = propagateResult;
 		});
 		biasGradient = nextLayerDelta;//for the bias up to now doesn't support dropout
+		for (int i = 0; i < outputDim; i++)
+		{
+			batchBiasGradient[i] += biasGradient[i];
+		}
 		//begin update the weight
 		parallel_for (0,  outputDim,[&](int i)
 		{
 			for (auto singleConnection : weightToOutput[i])
 			{
-				weightGradient[singleConnection.first][i] = nextLayerDelta[i]*nextLayerDelta[singleConnection.first];
+				float temp = nextLayerDelta[i] * nextLayerDelta[singleConnection.first];
+				weightGradient[singleConnection.first][i] =temp ;
+				batchWeightGradient[singleConnection.first][i] += temp;
 			}
 		});
 	}
 	virtual void updateBias(float stepSize, const vector<float>& isRemained)
 	{
 		transform(isRemained.cbegin(), isRemained.cend(), biasGradient.cbegin(), bias.begin(), [&](int a, int b){return a*b*stepSize; });
+		batchBiasGradient.swap(vector<float>(outputDim, 0));//clear the batch sum
 	}
 	virtual void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
@@ -119,6 +127,7 @@ public:
 			for_each(weightFromInput[i].cbegin(), weightFromInput[i].cend(), [&](const pair<int, int>& in)
 			{
 				connectWeight[i][in.first] -= isRemained[i] * stepSize*weightGradient[i][in.second];
+				batchWeightGradient[i][in.first] = 0;//clear the batch sum
 			});
 		});
 	}

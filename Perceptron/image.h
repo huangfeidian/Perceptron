@@ -13,7 +13,8 @@ public:
 
 	image(size_t width, size_t height) : width_(width), height_(height), data_(width * height, 0) {}
 
-	void write(const std::string& path) const {
+	void write(const std::string& path) const 
+	{
 		std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::out);
 
 		const uint32_t line_pitch = ((width_ + 3) / 4) * 4;
@@ -62,35 +63,42 @@ public:
 		}
 	}
 
-	void resize(size_t width, size_t height) {
+	void resize(size_t width, size_t height)
+	{
 		data_.resize(width * height);
 		width_ = width;
 		height_ = height;
 	}
 
-	void fill(intensity_t value) {
+	void fill(intensity_t value) 
+	{
 		std::fill(data_.begin(), data_.end(), value);
 	}
 
-	intensity_t& at(size_t x, size_t y) {
+	intensity_t& at(size_t x, size_t y) 
+	{
 		assert(x < width_);
 		assert(y < height_);
 		return data_[y * width_ + x];
 	}
 
-	const intensity_t& at(size_t x, size_t y) const {
+	const intensity_t& at(size_t x, size_t y) const
+	{
 		assert(x < width_);
 		assert(y < height_);
 		return data_[y * width_ + x];
 	}
 
-	size_t width() const {
+	size_t width() const 
+	{
 		return width_;
 	}
-	size_t height() const {
+	size_t height() const 
+	{
 		return height_;
 	}
-	const std::vector<intensity_t>& data() const {
+	const std::vector<intensity_t>& data() const 
+	{
 		return data_;
 	}
 private:

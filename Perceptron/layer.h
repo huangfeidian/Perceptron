@@ -22,13 +22,11 @@ public:
 	std::vector<float>  delta;//delta[i]=weightGradient[i]*currentFunc.diff(outputValue[i])
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
 	const int dim ;
-	layer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim)
+	layer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
+		 inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), weightGradient(inDim,0)
 	{
-		inputValue.reserve(inDim);
-		isRemained.reserve(inDim);
-		outputValue.reserve(inDim);
-		weightGradient.reserve(inDim);
-		delta.reserve(inDim);
+		
+	
 		//and other initialtion
 	}
 	void dropoutNodes(int numberToRemain)

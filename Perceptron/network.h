@@ -60,12 +60,23 @@ public:
 			allConnections[i-1].backPropagate(initDelta, allLayers[i - 1].weightGradient);
 		}
 	}
-	void updateNetwork(float stepSize)
+	void updateNetwork(float biasStepSize,float weightStepSize)
 	{
 		parallel_for(0, layerNum - 1, [&](int index)
 		{
-			allConnections[index].updateBias(stepSize,allLayers[index].isRemained);
-			allConnections[index].updateWeight(stepSize,allLayers[index].isRemained);
+			allConnections[index].updateBias(biasStepSize,allLayers[index].isRemained);
+			allConnections[index].updateWeight(weightStepSize,allLayers[index].isRemained);
 		});
 	}
+	void trainbatch(const vector<vector<float>>& batchInput,const vector<vector<float>>& batchResult, int beginIndex,int batchSize)
+	{
+		int totalSize = batchInput.size();
+		int currentBatch = (totalSize - beginIndex) > batchSize ? batchSize : (totalSize - beginIndex);
+		for (int i = 0; i < currentBatch; i++)
+		{
+			singleCaseOutput(batchInput[beginIndex + i]);
+			singleCaseBackProp(batchResult[beginIndex + i]);
+		}
+	}
+
 };

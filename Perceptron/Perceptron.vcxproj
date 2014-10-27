@@ -87,6 +87,7 @@
     <ClInclude Include="fullConnect.h" />
     <ClInclude Include="inputs.h" />
     <ClInclude Include="layer.h" />
+    <ClInclude Include="train.h" />
     <ClInclude Include="vectorize.h" />
   </ItemGroup>
   <ItemGroup>

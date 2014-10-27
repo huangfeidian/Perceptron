@@ -37,7 +37,8 @@ void parse_mnist_labels(const std::string& label_file, std::vector<int> *labels)
 
 	}
 	//oh I see
-	for (size_t i = 0; i < num_items; i++) {
+	for (size_t i = 0; i < num_items; i++)
+	{
 		uint8_t label;
 		ifs.read((char*) &label, 1);
 		labels->push_back((int) label);
@@ -83,7 +84,8 @@ void parse_mnist_image(std::ifstream& ifs,
 	double scale_max,
 	int x_padding,
 	int y_padding,
-	vec_t& dst) {
+	vec_t& dst) 
+{
 	const int width = header.num_cols + 2 * x_padding;
 	const int height = header.num_rows + 2 * y_padding;
 
