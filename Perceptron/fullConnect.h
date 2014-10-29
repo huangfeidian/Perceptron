@@ -53,10 +53,10 @@ public:
 			float propagateResult = 0;
 			propagateResult = avx_product(nextLayerDelta, connectWeight[i]);//using avx
 			preLayerGradient[i] = propagateResult;
-			std::transform(nextLayerDelta.cbegin(), nextLayerDelta.cend(), weightGradient[i].begin(), [&](float in){return in*preLayerOutput[i]; });
+			std::transform(nextLayerDelta.cbegin(), nextLayerDelta.cend(), outputGradient[i].begin(), [&](float in){return in*preLayerOutput[i]; });
 			for (int j = 0; j < outputDim; j++)
 			{
-				batchWeightGradient[i][j] += weightGradient[i][j];
+				batchWeightGradient[i][j] += outputGradient[i][j];
 			}
 		});
 		biasGradient = nextLayerDelta;//for the bias up to now doesn't support dropout
@@ -64,7 +64,7 @@ public:
 		{
 			batchBiasGradient[i] += biasGradient[i];
 		}
-		//the weightGradient
+		//the outputGradient
 	}
 	void updateBias(float stepSize, const vector<float>& isRemained)
 	{
@@ -77,7 +77,7 @@ public:
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				connectWeight[i][j] -= isRemained[i] * stepSize*weightGradient[i][j];
+				connectWeight[i][j] -= isRemained[i] * stepSize*outputGradient[i][j];
 				batchWeightGradient[i][j] = 0;//clear the batchsum
 			}
 		});

@@ -10,21 +10,19 @@ public:
 	const int inputDim;
 	const int outputDim;
 	std::vector<std::vector<int>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
-	std::vector<std::vector<float>> weightGradient;//for the Gradient of the weight
+	std::vector<std::vector<float>> outputGradient;//for the Gradient of the weight
 	std::vector<std::vector<float>> batchWeightGradient;//for the batch sum of  Gradient of the weight
 	std::vector<std::map<int, int>> weightFromInput;//weightFromInput[i][j]=connectWeight[i][j]
 	std::vector<std::map<int, int>> weightToOutput;//weightToOutput[i][j]=connecWeight[j][i]
 
 	int totalConnections;//sum of  all isConnected[i][j]!=0
-	std::vector<float>  bias;// for the bias
-	std::vector<float>  biasGradient;//biasGradient[i]=delta[i]
-	std::vector<float>  batchBiasGradient;//batch sum of biasGradient[i]
+	
 
-	connection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), bias(outDim, 0), biasGradient(outDim, 0), batchBiasGradient(outDim, 0), totalConnections(0)
+	connection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0)
 	{
 		connectWeight.reserve(inDim);
 		isConnected.reserve(inDim);
-		weightGradient.reserve(inDim);
+		outputGradient.reserve(inDim);
 
 		weightFromInput.reserve(inDim);
 		weightToOutput.reserve(outDim);
@@ -32,7 +30,7 @@ public:
 		{
 			connectWeight[i].reserve(outDim);
 			isConnected[i].reserve(outDim);
-			weightGradient.reserve(outDim);
+			outputGradient.reserve(outDim);
 			for (int j = 0; j < outDim; j++)
 			{
 				isConnected[i][j] = 0;
@@ -83,8 +81,7 @@ public:
 			{
 				propagateResult += input[singleConnection.first] * connectWeight[singleConnection.second][i];
 			}
-			propagateResult += bias[i];
-			output[i] = propagateResult;
+			output[i] += propagateResult;
 		});
 	}
 	virtual void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient)
@@ -99,34 +96,26 @@ public:
 			}
 			preLayerGradient[i] = propagateResult;
 		});
-		biasGradient = nextLayerDelta;//for the bias up to now doesn't support dropout
-		for (int i = 0; i < outputDim; i++)
-		{
-			batchBiasGradient[i] += biasGradient[i];
-		}
+		
 		//begin update the weight
 		parallel_for (0,  outputDim,[&](int i)
 		{
 			for (auto singleConnection : weightToOutput[i])
 			{
 				float temp = nextLayerDelta[i] * nextLayerDelta[singleConnection.first];
-				weightGradient[singleConnection.first][i] =temp ;
+				outputGradient[singleConnection.first][i] =temp ;
 				batchWeightGradient[singleConnection.first][i] += temp;
 			}
 		});
 	}
-	virtual void updateBias(float stepSize, const vector<float>& isRemained)
-	{
-		transform(isRemained.cbegin(), isRemained.cend(), biasGradient.cbegin(), bias.begin(), [&](int a, int b){return a*b*stepSize; });
-		batchBiasGradient.swap(vector<float>(outputDim, 0));//clear the batch sum
-	}
+	
 	virtual void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
 		parallel_for ( 0, inputDim,[&](int i)
 		{
 			for_each(weightFromInput[i].cbegin(), weightFromInput[i].cend(), [&](const pair<int, int>& in)
 			{
-				connectWeight[i][in.first] -= isRemained[i] * stepSize*weightGradient[i][in.second];
+				connectWeight[i][in.first] -= isRemained[i] * stepSize*outputGradient[i][in.second];
 				batchWeightGradient[i][in.first] = 0;//clear the batch sum
 			});
 		});

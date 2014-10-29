@@ -37,8 +37,7 @@ public:
 		allLayers[0].outputValue=inputCase;
 		for (int i = 0; i < layerNum ; i++)//do something to eliminate the vector copy next time
 		{
-			allConnections[i].forwardPropagate(allLayers[i].outputValue, allLayers[i].inputValue);
-			allLayers[i+1].update();
+			allConnections[i].forwardPropagate(allLayers[i].outputValue, allLayers[i+1].inputValue);
 		}
 		output=allLayers[layerNum].outputValue;
 	}
@@ -49,22 +48,22 @@ public:
 	void singleCaseBackProp(const vector<float>& realResult)
 	{
 		auto initGradient = currentLoss.diff(output, realResult);
-		allLayers[layerNum ].weightGradient.swap(initGradient);
+		allLayers[layerNum ].outputGradient.swap(initGradient);
 		vector<float> initDelta;
 		for (int i = layerNum ; i > 0; i--)
 		{
-			transform(allLayers[i].weightGradient.cbegin(), allLayers[i].weightGradient.cend(), initDelta.begin(), [&](float input)
+			transform(allLayers[i].outputGradient.cbegin(), allLayers[i].outputGradient.cend(), initDelta.begin(), [&](float input)
 			{
 				return allLayers[i].currentFunc.diff(input);
 			});
-			allConnections[i-1].backPropagate(initDelta, allLayers[i - 1].weightGradient);
+			allConnections[i-1].backPropagate(initDelta, allLayers[i - 1].outputGradient);
 		}
 	}
 	void updateNetwork(float biasStepSize,float weightStepSize)
 	{
 		parallel_for(0, layerNum - 1, [&](int index)
 		{
-			allConnections[index].updateBias(biasStepSize,allLayers[index].isRemained);
+			allLayers[index+1].updateBias(biasStepSize);
 			allConnections[index].updateWeight(weightStepSize,allLayers[index].isRemained);
 		});
 	}

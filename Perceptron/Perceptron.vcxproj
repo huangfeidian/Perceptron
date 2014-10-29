@@ -81,6 +81,8 @@
     <ClInclude Include="activateFunction.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="mnistParser.h" />
+    <ClInclude Include="multiConnection.h" />
+    <ClInclude Include="multiLayer.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="convolution.h" />

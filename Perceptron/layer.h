@@ -18,12 +18,16 @@ public:
 	//outputValue[i]=current.currentFunc(current.inputValue[i]+current.bias[i])
 	std::vector<float>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
 	int remainNumber ;//the number of nodes to dropout
-	std::vector<float>  weightGradient;//current.weightGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
-	std::vector<float>  delta;//delta[i]=weightGradient[i]*currentFunc.diff(outputValue[i])
+	std::vector<float>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
+	std::vector<float>  delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
+	std::vector<float>  bias;// for the bias
+	std::vector<float>  biasGradient;//biasGradient[i]=delta[i]
+	std::vector<float>  batchBiasGradient;//batch sum of biasGradient[i]
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
-	const int dim ;
+	const int dim ;//for the dimension
+
 	layer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
-		 inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), weightGradient(inDim,0)
+		inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
 	{
 		
 	
@@ -52,13 +56,37 @@ public:
 		}
 		remainNumber = dim;
 	}
-	void update()
+	void updateInput(const vector<float>& partInput)//for now this function is not used
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			inputValue[i] += partInput[i];
+		}
+	}
+	void forwardPropagate()
 	{
 		int scale = dim / remainNumber;
 		for (int i = 0; i < dim; i++)//we can use sse
 		{
-			outputValue[i] = scale*currentFunc(inputValue[i])*isRemained[i];
+			outputValue[i] = scale*currentFunc(inputValue[i]+bias[i])*isRemained[i];
+			inputValue[i] = 0;
 		}
 	}
-
+	void backPropagate(const vector<float>& preGradient)
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			delta[i] = preGradient[i] * currentFunc(outputValue[i]);
+			biasGradient[i] = delta[i];
+			batchBiasGradient[i] += biasGradient[i];
+		}
+	}
+	void updateBias(float biasStepsize)
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			bias[i] -= batchBiasGradient[i]*biasStepsize;
+			batchBiasGradient.swap(vector<float>(dim, 0));//clear the batch sum
+		}
+	}
 };

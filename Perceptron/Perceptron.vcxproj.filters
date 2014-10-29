@@ -48,6 +48,12 @@
     <ClInclude Include="train.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="multiLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="multiConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">
