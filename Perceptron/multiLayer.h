@@ -1,10 +1,11 @@
-#include "layer.h"
+#include "singleLayer.h"
 class multiLayer
 {
 public:
 	vector<layer&> featureMaps;
 	int featureMapNumber;
-	multiLayer(int FeaMapNum, int inRow, int inCol, ACTIVATEFUNC currentFuncType)
+	int outputDim;
+	multiLayer(int FeaMapNum, int inRow, int inCol, ACTIVATEFUNC currentFuncType) :outputDim(inRow*inCol), featureMapNumber(FeaMapNum)
 	{
 		for (int i = 0; i < FeaMapNum; i++)
 		{

@@ -1,5 +1,5 @@
 #include <vector>
-#include "connection.h"
+#include "singleConnection.h"
 #include <ppl.h>
 using namespace concurrency;
 using namespace std;
@@ -13,7 +13,7 @@ public:
 	const int windowRow;
 	const int windowColumn;
 	convolution(int inRow,int inColumn,  int window) :connection(inRow*inColumn, (inColumn- window+1)*(inRow-window+1)), windowRow(window)
-		, windowColumn(window), inDimColumn(inColumn), inDimRow(inDimRow), outDimColumn(inColumn + 1 - window), outDimRow(inRow+1-window)
+		, windowColumn(window), inDimColumn(inColumn), inDimRow(inRow), outDimColumn(inColumn + 1 - window), outDimRow(inRow+1-window)
 		//watchout you must ensure inDimRow>=window and inDimColumn>=window
 	{
 		setConnected();

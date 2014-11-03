@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "singleConnection.h"
 #include <ppl.h>
 using namespace concurrency;
 class fullConnection :public connection
@@ -42,8 +42,7 @@ public:
 		{
 			float propagateResult = 0;
 			propagateResult = avx_product(input, reverseWeight[i]);
-			propagateResult += bias[i];
-			output[i] = propagateResult;
+			output[i] += propagateResult;
 		});
 	}
 	void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient,const vector<float>& preLayerOutput)
@@ -59,17 +58,7 @@ public:
 				batchWeightGradient[i][j] += outputGradient[i][j];
 			}
 		});
-		biasGradient = nextLayerDelta;//for the bias up to now doesn't support dropout
-		for (int i = 0; i < outputDim; i++)
-		{
-			batchBiasGradient[i] += biasGradient[i];
-		}
 		//the outputGradient
-	}
-	void updateBias(float stepSize, const vector<float>& isRemained)
-	{
-		transform(isRemained.cbegin(), isRemained.cend(), biasGradient.cbegin(), bias.begin(), [&](int a, int b){return a*b*stepSize; });
-		batchBiasGradient.swap(vector<float>(outputDim, 0));//clear the batch sum
 	}
 	void updateWeight(float stepSize, const vector<float>& isRemained)
 	{

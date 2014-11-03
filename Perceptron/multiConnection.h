@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "singleConnection.h"
 #include "multiLayer.h"
 class multiConnection
 {
@@ -80,5 +80,11 @@ public:
 			}
 		}
 	}
-	void updateWeight()//
+	void updateWeight(float stepSize,const multiLayer& nextLayer)
+	{
+		for (int i = 0; i < connectionNumber; i++)
+		{
+			feaMapConnect[i]->updateWeight(stepSize,nextLayer.featureMaps[i].isRemained);
+		}
+	}
 };
