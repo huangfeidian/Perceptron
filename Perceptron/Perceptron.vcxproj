@@ -78,7 +78,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="accelerateFor.h" />
     <ClInclude Include="activateFunction.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="mnistParser.h" />
     <ClInclude Include="multiConnection.h" />

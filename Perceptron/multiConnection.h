@@ -1,5 +1,6 @@
 #include "singleConnection.h"
 #include "multiLayer.h"
+#include "accelerateFor.h"
 class multiConnection
 {
 public:

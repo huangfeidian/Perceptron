@@ -13,4 +13,12 @@ public:
 			featureMaps.push_back(tempLayer);
 		}
 	}
+	void updateBias(float biasstep)
+	{
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i].updateBias(biasstep);
+		}
+	}
+	
 };

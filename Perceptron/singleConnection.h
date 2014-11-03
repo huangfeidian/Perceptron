@@ -1,6 +1,6 @@
 #include "singleLayer.h"
 #include "vectorize.h"
-#include <ppl.h>
+#include "accelerateFor.h"
 #include <algorithm>
 using namespace std;
 class connection
@@ -74,7 +74,7 @@ public:
 	}
 	virtual void forwardPropagate(const vector<float>& input, vector<float>& output)
 	{
-		parallel_for ( 0, outputDim,[&](int i)//we can use multithread or multithread
+		accelerateFor ( 0, outputDim,[&](int i)//we can use multithread or multithread
 		{
 			float propagateResult = 0;
 			for (auto singleConnection : weightToOutput[i])//we can use sse or avx
@@ -87,7 +87,7 @@ public:
 	virtual void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient)
 	{
 		//we can gain more parallel
-		parallel_for(0,  inputDim,[&](int i)//for the layer nodes
+		accelerateFor(0,  inputDim,[&](int i)//for the layer nodes
 		{
 			float propagateResult = 0;
 			for (auto singleConnection : weightFromInput[i])
@@ -98,7 +98,7 @@ public:
 		});
 		
 		//begin update the weight
-		parallel_for (0,  outputDim,[&](int i)
+		accelerateFor(0,  outputDim,[&](int i)
 		{
 			for (auto singleConnection : weightToOutput[i])
 			{
@@ -111,7 +111,7 @@ public:
 	
 	virtual void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
-		parallel_for ( 0, inputDim,[&](int i)
+		accelerateFor ( 0, inputDim,[&](int i)
 		{
 			for_each(weightFromInput[i].cbegin(), weightFromInput[i].cend(), [&](const pair<int, int>& in)
 			{

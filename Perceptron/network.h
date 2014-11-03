@@ -45,9 +45,8 @@ public:
 		allLayers[0].featureMaps[0].outputValue=inputCase;
 		for (int i = 0; i < layerNum ; i++)//do something to eliminate the vector copy next time
 		{
-			allConnections[i].forwardPropagate(allLayers[i].outputValue, allLayers[i+1].inputValue);
+			allConnections[i].forwardPropagate(allLayers[i], allLayers[i+1]);
 		}
-		output=allLayers[layerNum].outputValue;
 	}
 	vector<float> setBackGradient(const vector<float>& realResult)
 	{
@@ -56,24 +55,20 @@ public:
 	void singleCaseBackProp(const vector<float>& realResult)
 	{
 		auto initGradient = currentLoss.diff(output, realResult);
-		allLayers[layerNum ].outputGradient.swap(initGradient);
+		allLayers[layerNum ].featureMaps[0].outputGradient.swap(initGradient);
 		vector<float> initDelta;
 		for (int i = layerNum ; i > 0; i--)
 		{
-			transform(allLayers[i].outputGradient.cbegin(), allLayers[i].outputGradient.cend(), initDelta.begin(), [&](float input)
-			{
-				return allLayers[i].currentFunc.diff(input);
-			});
-			allConnections[i-1].backPropagate(initDelta, allLayers[i - 1].outputGradient);
+			allConnections[i - 1].backPropagate(allLayers[i], allLayers[i - 1]);
 		}
 	}
 	void updateNetwork(float biasStepSize,float weightStepSize)
 	{
-		parallel_for(0, layerNum - 1, [&](int index)
+		for(int index=0; index<layerNum - 1;index++)
 		{
 			allLayers[index+1].updateBias(biasStepSize);
-			allConnections[index].updateWeight(weightStepSize,allLayers[index].isRemained);
-		});
+			allConnections[index].updateWeight(weightStepSize,allLayers[index]);
+		}
 	}
 	void trainbatch(const vector<vector<float>>& batchInput,const vector<vector<float>>& batchResult, int beginIndex,int batchSize)
 	{

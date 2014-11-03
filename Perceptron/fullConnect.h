@@ -1,6 +1,5 @@
 #include "singleConnection.h"
-#include <ppl.h>
-using namespace concurrency;
+#include "accelerateFor.h"
 class fullConnection :public connection
 {
 public:
@@ -38,7 +37,7 @@ public:
 	}
 	void forwardPropagate(const vector<float>& input, vector<float>& output)
 	{
-		parallel_for (0,outputDim,[&](int i)
+		accelerateFor(0,outputDim,[&](int i)
 		{
 			float propagateResult = 0;
 			propagateResult = avx_product(input, reverseWeight[i]);
@@ -47,7 +46,7 @@ public:
 	}
 	void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient,const vector<float>& preLayerOutput)
 	{
-		parallel_for(0,inputDim,[&](int i)
+		accelerateFor(0,inputDim,[&](int i)
 		{
 			float propagateResult = 0;
 			propagateResult = avx_product(nextLayerDelta, connectWeight[i]);//using avx
@@ -62,7 +61,7 @@ public:
 	}
 	void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
-		parallel_for(0, inputDim, [&](int i)
+		accelerateFor(0, inputDim, [&](int i)
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
