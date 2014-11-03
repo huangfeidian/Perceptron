@@ -84,11 +84,11 @@
     <ClInclude Include="multiConnection.h" />
     <ClInclude Include="multiLayer.h" />
     <ClInclude Include="network.h" />
-    <ClInclude Include="connection.h" />
+    <ClInclude Include="singleConnection.h" />
     <ClInclude Include="convolution.h" />
     <ClInclude Include="fullConnect.h" />
     <ClInclude Include="inputs.h" />
-    <ClInclude Include="layer.h" />
+    <ClInclude Include="singleLayer.h" />
     <ClInclude Include="train.h" />
     <ClInclude Include="vectorize.h" />
   </ItemGroup>

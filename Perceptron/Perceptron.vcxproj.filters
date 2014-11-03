@@ -18,16 +18,10 @@
     <ClInclude Include="activateFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="layer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="inputs.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="vectorize.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="connection.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="convolution.h">
@@ -52,6 +46,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="multiConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="singleLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="singleConnection.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
