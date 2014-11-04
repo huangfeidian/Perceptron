@@ -24,12 +24,6 @@
     <ClInclude Include="vectorize.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="convolution.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="fullConnect.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="network.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -58,6 +52,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="accelerateFor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="convolConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="poolConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="poolLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fullConnection.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

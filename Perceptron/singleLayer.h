@@ -4,12 +4,10 @@
 #include <list>
 #include <random>
 #include <assert.h>
-#include <ppl.h>
-using namespace concurrency;
 using std::vector;
 using std::map;
 using std::list;
-class layer
+class singleLayer
 {
 public:
 	std::vector<float> inputValue;
@@ -23,11 +21,13 @@ public:
 	std::vector<float>  bias;// for the bias
 	std::vector<float>  biasGradient;//biasGradient[i]=delta[i]
 	std::vector<float>  batchBiasGradient;//batch sum of biasGradient[i]
+
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
 	const int dim ;//for the dimension
 
-	layer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
-		inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
+	singleLayer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
+		inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
+		bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
 	{
 		
 	
@@ -56,14 +56,14 @@ public:
 		}
 		remainNumber = dim;
 	}
-	void updateInput(const vector<float>& partInput)//for now this function is not used
-	{
-		for (int i = 0; i < dim; i++)
-		{
-			inputValue[i] += partInput[i];
-		}
-	}
-	void forwardPropagate()
+	//void updateInput(const vector<float>& partInput)//for now this function is not used
+	//{
+	//	for (int i = 0; i < dim; i++)
+	//	{
+	//		inputValue[i] += partInput[i];
+	//	}
+	//}
+	virtual void forwardPropagate()
 	{
 		int scale = dim / remainNumber;
 		for (int i = 0; i < dim; i++)//we can use sse
@@ -72,16 +72,16 @@ public:
 			inputValue[i] = 0;
 		}
 	}
-	void backPropagate(const vector<float>& preGradient)
+	virtual void backPropagate()
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			delta[i] = preGradient[i] * currentFunc(outputValue[i]);
+			delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
 			biasGradient[i] = delta[i];
 			batchBiasGradient[i] += biasGradient[i];
 		}
 	}
-	void updateBias(float biasStepsize)
+	virtual void updateBias(float biasStepsize)
 	{
 		for (int i = 0; i < dim; i++)
 		{

@@ -1,14 +1,11 @@
 
 #include <iostream>
-#include "layer.h"
+#include "network.h"
+#include "fullConnection.h"
 using namespace std;
 int main()
 {
-	//activateFunc<ACTIVATEFUNC::SIGMOID> heheA;
-	//activateFunc<ACTIVATEFUNC::TANH> heheB;
-	//connection<4, 5> curconnect;
-	//cout << heheA(1) << endl<<heheB(1)<<endl;
-	//cout << heheA.diff(1) << endl << heheB.diff(1) << endl;
-	//cout << curconnect.inputDim << endl;
-	//return 1;
+	network currentNet(4, LOSSFUNC::MSE);
+	fullConnection  hehe(4, 1);
+	singleLayer out(1, ACTIVATEFUNC::SIGMOID);
 }
