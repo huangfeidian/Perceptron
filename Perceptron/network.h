@@ -14,10 +14,21 @@ public:
 	std::vector<multiConnection&> allConnections;
 	network(int inputDim, LOSSFUNC currentLossFunctype) :inputDim(inputDim), outputDim(inputDim), layerNum(1), currentLoss(currentLossFunctype), output(inputDim)
 	{
-		singleLayer inputLayer(inputDim, ACTIVATEFUNC::IDENTITY);
+		singleLayer* inputLayer=new singleLayer(inputDim, ACTIVATEFUNC::IDENTITY);
+		multiLayer* firstMultiLayer = new multiLayer(1, inputDim);
+		firstMultiLayer->addSingleLayer(inputLayer);
+		allLayers.push_back(*firstMultiLayer);
 	}
 	void addLayerAndConnection(multiLayer& layerToAdd, multiConnection& connectionToAdd)
 	{
+#ifdef CHECK_LEGITIMATE
+		for (int i = 0; i < connectionToAdd.connectionNumber; i++)
+		{
+			auto connectFromTo = connectionToAdd.connectionRelation[i];
+			assert(allLayers[layerNum - 1].featureMaps[connectFromTo.first]->dim == connectionToAdd.feaMapConnect[i]->inputDim);
+			assert(layerToAdd.featureMaps[connectFromTo.first]->dim == connectionToAdd.feaMapConnect[i]->outputDim);
+		}
+#endif
 		layerNum++;
 		outputDim = layerToAdd.outputDim;
 		allLayers.push_back(layerToAdd);

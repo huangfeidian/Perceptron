@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#pragma once
 using namespace std;
 enum class LOSSFUNC
 {
@@ -53,7 +54,7 @@ float evalCrossentrophy(const vector<float>& A, const vector<float>& B)
 	}
 	return result;
 }
-vector<float>diffCrossentrophy(const vector<float>& A, const vector<float>& B)
+vector<float> diffCrossentrophy(const vector<float>& A, const vector<float>& B)
 {
 	int sizeA, sizeB;
 	sizeA = A.size();
@@ -68,17 +69,25 @@ vector<float>diffCrossentrophy(const vector<float>& A, const vector<float>& B)
 	return result;
 }
 
-evalFunctype evalFunc[2] = { &evalMse, &evalCrossentrophy };
-diffFunctype diffFunc[2] = { &diffMse, &diffCrossentrophy };
+
 class lossFunc
 {
 private:
 	evalFunctype currentEvalFunc;
 	diffFunctype currentDiffFunc;
 public:
-	lossFunc(LOSSFUNC currentFuncType) :currentDiffFunc(diffFunc[(int) currentFuncType]), currentEvalFunc(evalFunc[(int) currentFuncType])
+	lossFunc(LOSSFUNC currentFuncType) 
 	{
-
+		if (currentFuncType == LOSSFUNC::CROSSENTROPHY)
+		{
+			currentDiffFunc = &diffCrossentrophy;
+			currentEvalFunc = &evalCrossentrophy;
+		}
+		else
+		{
+			currentDiffFunc = &diffMse;
+			currentEvalFunc = &evalMse;
+		}
 	}
 	float operator()(vector<float>& trainResult,vector<float> realResult)const
 	{

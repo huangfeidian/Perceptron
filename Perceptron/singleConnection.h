@@ -2,6 +2,7 @@
 #include "vectorize.h"
 #include "accelerateFor.h"
 #include <algorithm>
+#pragma once
 using namespace std;
 class singleConnection
 {

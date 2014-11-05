@@ -1,4 +1,5 @@
 #include <algorithm>
+#pragma once
 enum class ACTIVATEFUNC
 {
 	TANH,

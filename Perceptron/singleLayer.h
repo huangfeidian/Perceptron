@@ -7,6 +7,7 @@
 using std::vector;
 using std::map;
 using std::list;
+#pragma once
 class singleLayer
 {
 public:

@@ -1,6 +1,7 @@
 //this head file encapsulate  plantform dependent parallel library
 #include "config.h"
 #include <functional>
+#pragma once
 #ifdef WINDOWS_PPL
 #include <ppl.h>
 using namespace concurrency;

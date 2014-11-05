@@ -1,17 +1,21 @@
 #include "singleLayer.h"
+#pragma once
 class multiLayer
 {
 public:
 	vector<singleLayer*> featureMaps;
-	int featureMapNumber;
-	int outputDim;
-	multiLayer(int FeaMapNum, int inRow, int inCol, ACTIVATEFUNC currentFuncType) :outputDim(inRow*inCol), featureMapNumber(FeaMapNum)
+	const int featureMapNumber;
+	const int outputDim;
+	multiLayer(int FeaMapNum, int outDim) : featureMapNumber(FeaMapNum), featureMaps(FeaMapNum), outputDim(outDim)
 	{
-		for (int i = 0; i < FeaMapNum; i++)
-		{
-			singleLayer tempLayer(inRow*inCol,currentFuncType);
-			featureMaps.push_back(&tempLayer);
-		}
+		//do nothing
+	}
+	void addSingleLayer(singleLayer* inputLayer)
+	{
+#ifdef CHECK_LEGITIMATE
+		assert(outputDim == inputLayer->dim);
+#endif 
+		featureMaps.push_back(inputLayer);
 	}
 	void resetOutputGradient()
 	{
