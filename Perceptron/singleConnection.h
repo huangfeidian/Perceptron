@@ -19,19 +19,12 @@ public:
 	int totalConnections;//sum of  all isConnected[i][j]!=0
 	
 
-	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0)
+	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0), connectWeight(inDim, vector<float>(outDim,0))
+		, isConnected(inDim, vector<int>(outDim, 0)), weightGradient(inDim, vector<float>(outDim, 0)), weightFromInput(inDim, map<int, int>()),
+		weightToOutput(outDim, map<int, int>())
 	{
-		connectWeight.reserve(inDim);
-		isConnected.reserve(inDim);
-		weightGradient.reserve(inDim);
-
-		weightFromInput.reserve(inDim);
-		weightToOutput.reserve(outDim);
 		for (int i = 0; i < inDim; i++)
 		{
-			connectWeight[i].reserve(outDim);
-			isConnected[i].reserve(outDim);
-			weightGradient.reserve(outDim);
 			for (int j = 0; j < outDim; j++)
 			{
 				isConnected[i][j] = 0;
@@ -65,7 +58,7 @@ public:
 			}
 		}
 	}
-	inline void addConnection(int fromIndex, int toIndex, float weight)
+	 virtual void addConnection(int fromIndex, int toIndex, float weight)
 	{
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;

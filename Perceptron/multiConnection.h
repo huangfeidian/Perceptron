@@ -14,6 +14,7 @@ public:
 	vector<map<int,int>> afterFromPre;//the connection between pre layer map[a] to next layer map afterFromPre[a]={i} etc
 	vector<pair<int, int>> connectionRelation;
 	multiConnection(int pfmNumber, int afmNumber) :afterFeaMapNumber(afmNumber), preFeaMapNumber(pfmNumber), connectionNumber(0)
+		, preToAfter(pfmNumber, map<int, int>()), afterFromPre(afmNumber, map<int, int>())
 	{
 		
 	}
@@ -25,33 +26,33 @@ public:
 		connectionNumber++;
 		connectionRelation.push_back(make_pair(preMapIndex, afterMapindex));
 	}
-	void forwardPropagate(const multiLayer& preLayers, const multiLayer& afterLayers)
+	void forwardPropagate(const multiLayer* preLayers, const multiLayer* afterLayers)
 	{
 		for (int i = 0; i < afterFeaMapNumber; i++)
 		{
 			for (auto currentConnect : afterFromPre[i])
 			{
-				feaMapConnect[currentConnect.second]->forwardPropagate(preLayers.featureMaps[currentConnect.first]->outputValue, 
-					afterLayers.featureMaps[i]->inputValue);
+				feaMapConnect[currentConnect.second]->forwardPropagate(preLayers->featureMaps[currentConnect.first]->outputValue, 
+					afterLayers->featureMaps[i]->inputValue);
 			}
 		}
 	}
-	void backPropagate(const multiLayer& afterLayers, multiLayer& preLayers)
+	void backPropagate(const multiLayer* afterLayers, multiLayer* preLayers)
 	{
 		for (int i = 0; i < preFeaMapNumber; i++)
 		{
 			for (auto currentConnect : preToAfter[i])
 			{
-				feaMapConnect[currentConnect.second]->backPropagate(afterLayers.featureMaps[currentConnect.first]->delta, preLayers.featureMaps[i]->outputGradient
-					,preLayers.featureMaps[i]->outputValue);
+				feaMapConnect[currentConnect.second]->backPropagate(afterLayers->featureMaps[currentConnect.first]->delta, preLayers->featureMaps[i]->outputGradient
+					,preLayers->featureMaps[i]->outputValue);
 			}
 		}
 	}
-	void updateWeight(float stepSize,const multiLayer& nextLayer)
+	void updateWeight(float stepSize,const multiLayer* nextLayer)
 	{
 		for (int i = 0; i < connectionNumber; i++)
 		{
-			feaMapConnect[i]->updateWeight(stepSize,nextLayer.featureMaps[i]->isRemained);
+			feaMapConnect[i]->updateWeight(stepSize,nextLayer->featureMaps[i]->isRemained);
 		}
 	}
 };

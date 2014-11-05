@@ -2,10 +2,10 @@
 #include <vector>
 #include <assert.h>
 #include <numeric>
-
+#include "config.h"
 using std::vector;
 using std::accumulate;
-template float accumulate<const float*,float>(const float*, const float*, float);
+#ifdef USE_AVX
 float  avx_product(const vector<float>& origin1,const vector<float>& origin2)//2 vector product
 {
 	int size1 = origin1.size();
@@ -87,4 +87,20 @@ float avx_product(const vector<float>& origin1, const vector<float>& origin2, co
 	}
 	return result;
 }
+#else
+float  avx_product(const vector<float>& origin1,const vector<float>& origin2)
+{
+	float result=0;
+	int size1 = origin1.size();
+	int size2 = origin2.size();
+#ifdef CHECK_LEGITIMATE
+	assert(size1 == size2);
+#endif
+	for(int i=0;i<size1;i++)
+	{
+		result += origin1[i] * origin2[i];
+	}
+	return result;
+}
+#endif
 

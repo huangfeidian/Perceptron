@@ -6,7 +6,7 @@ public:
 	vector<singleLayer*> featureMaps;
 	const int featureMapNumber;
 	const int outputDim;
-	multiLayer(int FeaMapNum, int outDim) : featureMapNumber(FeaMapNum), featureMaps(FeaMapNum), outputDim(outDim)
+	multiLayer(int FeaMapNum, int outDim) : featureMapNumber(FeaMapNum), featureMaps(0), outputDim(outDim)
 	{
 		//do nothing
 	}

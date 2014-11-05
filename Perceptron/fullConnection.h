@@ -1,24 +1,21 @@
 #include "singleConnection.h"
-#include "accelerateFor.h"
+//#include "accelerateFor.h"
 class fullConnection :public singleConnection
 {
 public:
 	vector<vector<float>> reverseWeight;//reverseWeight[i][j]=connectweight[j][i]
-	fullConnection(int inDim, int outDim) :singleConnection(inDim, outDim)
+	fullConnection(int inDim, int outDim) :singleConnection(inDim, outDim), reverseWeight(outDim, vector<float>(inDim,0))
 	{
-		for (int i = 0; i < inDim; i++)
-		{
-			for (int j = 0; j < outDim; j++)
-			{
-				isConnected[i][j] = 1;
-			}
-		}
+		initWeight();
 	}
 	void addConnection(int fromIndex, int toIndex, float weight)
 	{
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;
 		reverseWeight[toIndex][fromIndex] = weight;
+		isConnected[fromIndex][toIndex] = 1;
+		weightFromInput[fromIndex][toIndex] = toIndex;
+		weightToOutput[toIndex][fromIndex] = fromIndex;
 	}
 	void initWeight()
 	{
@@ -37,12 +34,12 @@ public:
 	}
 	void forwardPropagate(const vector<float>& input, vector<float>& output)
 	{
-		accelerateFor(0,outputDim,[&](int i)
+		for (int i = 0; i < outputDim; i++)
 		{
 			float propagateResult = 0;
 			propagateResult = avx_product(input, reverseWeight[i]);
 			output[i] += propagateResult;
-		});
+		};
 	}
 	void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient,const vector<float>& preLayerOutput)
 	{

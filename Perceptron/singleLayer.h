@@ -91,7 +91,8 @@ public:
 		for (int i = 0; i < dim; i++)
 		{
 			bias[i] -= batchBiasGradient[i]*biasStepsize;
-			batchBiasGradient.swap(vector<float>(dim, 0));//clear the batch sum
+			vector<float> temp(dim, 0);
+			batchBiasGradient=temp;//clear the batch sum
 		}
 	}
 };

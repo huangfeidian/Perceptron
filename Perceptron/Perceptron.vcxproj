@@ -82,6 +82,7 @@
     <ClInclude Include="activateFunction.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="lossFunctionConcrete.h" />
     <ClInclude Include="mnistParser.h" />
     <ClInclude Include="multiConnection.h" />
     <ClInclude Include="multiLayer.h" />

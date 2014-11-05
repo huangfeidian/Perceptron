@@ -12,8 +12,9 @@ int main()
 	theonlylayer.addSingleLayer(&out);
 	multiConnection theonlyConnection(1, 1);
 	theonlyConnection.addConnection(0, 0, &hehe);
-	currentNet.addLayerAndConnection(theonlylayer, theonlyConnection);
+	currentNet.addLayerAndConnection(&theonlylayer, &theonlyConnection);
 	vector<float> lalallatest{ 1, 2, 3, 4 };
 	currentNet.singleCaseOutput(lalallatest);
-	cout << currentNet.allLayers[1].featureMaps[0]->outputValue[0];
+	int i = 1;
+	cout << currentNet.allLayers[1]->featureMaps[0]->outputValue[0]<<endl;
 }
