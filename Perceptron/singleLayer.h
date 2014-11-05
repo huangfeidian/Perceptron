@@ -72,6 +72,10 @@ public:
 			inputValue[i] = 0;
 		}
 	}
+	virtual void resetOutputGradient()
+	{
+		outputGradient = vector<float>(dim, 0);//clear the outputGradient
+	}
 	virtual void backPropagate()
 	{
 		for (int i = 0; i < dim; i++)

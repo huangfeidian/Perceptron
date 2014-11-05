@@ -94,7 +94,7 @@ public:
 			{
 				propagateResult += nextLayerDelta[singleConnection.first] * connectWeight[i][singleConnection.second];
 			}
-			preLayerGradient[i] = propagateResult;
+			preLayerGradient[i] += propagateResult;
 		});
 		
 		//begin update the weight

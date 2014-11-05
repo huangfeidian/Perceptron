@@ -61,6 +61,7 @@ public:
 		{
 			allLayers[i].backPropagate();
 			allConnections[i - 1].backPropagate(allLayers[i], allLayers[i - 1]);
+			allLayers[i].resetOutputGradient();
 		}
 	}
 	void updateNetwork(float biasStepSize,float weightStepSize)

@@ -13,6 +13,13 @@ public:
 			featureMaps.push_back(&tempLayer);
 		}
 	}
+	void resetOutputGradient()
+	{
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->resetOutputGradient();//clear the outputGradient
+		}
+	}
 	void forwardPropagate()
 	{
 		for (int i = 0; i < featureMapNumber; i++)
