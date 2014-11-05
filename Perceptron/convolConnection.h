@@ -1,6 +1,7 @@
 #include <vector>
 #include "singleConnection.h"
 #include <ppl.h>
+#include <iostream>
 using namespace concurrency;
 using namespace std;
 class convolution :public singleConnection
@@ -114,5 +115,17 @@ public:
 				}
 			}
 		}
+	}
+	void consoleWeightOutput()
+	{
+		for (int i = 0; i < windowRow; i++)
+		{
+			for (int j = 0; j < windowColumn; j++)
+			{
+				cout<< windowWeight[i][j] << ' ';
+			}
+			cout<< endl;
+		}
+		cout << "current convolution connection weight" << endl;
 	}
 };

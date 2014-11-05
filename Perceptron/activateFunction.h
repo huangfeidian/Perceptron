@@ -21,7 +21,7 @@ float diffTanh(float input)
 }
 float evalSigmoid(float input)
 {
-	float temp = std::exp(input);
+	float temp = std::exp(-1*input);
 	float result = 1 / (1 + temp);
 	return result;
 }

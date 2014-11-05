@@ -30,4 +30,8 @@ class poolLayer :singleLayer
 	{
 		// do nothing
 	}
+	void consoleBiasOutput()
+	{
+		cout << "this layer is pool layer ,no bias " << endl;
+	}
 };

@@ -1,4 +1,5 @@
 #include "singleConnection.h"
+#include <iostream>
 using namespace std;
 class pooling :public singleConnection
 {
@@ -73,5 +74,10 @@ class pooling :public singleConnection
 	void updateWeight(float stepSize, const vector<float>& isRemained)
 	{
 		//do nothing because  there are no weights here
+	}
+	void consoleWeightOutput()
+	{
+		
+		cout << "current connection is pool" << endl;
 	}
 };

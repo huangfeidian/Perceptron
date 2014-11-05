@@ -4,7 +4,6 @@
 #include <numeric>
 #include "config.h"
 using std::vector;
-using std::accumulate;
 #ifdef USE_AVX
 float  avx_product(const vector<float>& origin1,const vector<float>& origin2)//2 vector product
 {
@@ -13,7 +12,7 @@ float  avx_product(const vector<float>& origin1,const vector<float>& origin2)//2
 	assert(size1 == size2);
 	int blocks = size1 / 8;//because 256bit =8*sizeof(float)
 	__m256 result256,temp1,temp2;
-	float result;
+	float result=0;
 	result256=_mm256_setzero_ps();
 	for (int i = 0; i < blocks; i++)
 	{
@@ -22,7 +21,10 @@ float  avx_product(const vector<float>& origin1,const vector<float>& origin2)//2
 		result256 = _mm256_add_ps(result256, _mm256_mul_ps(temp1, temp2));
 	}
 	const float* temp = (const float*) &result256;
-	result = std::accumulate(temp, temp + 8, float(0.0));
+	for(int i=0;i<8;i++)
+	{
+		result+=temp[i];
+	}
 	for (int i = (size1 >> 3) << 3; i < size1; i++)
 	{
 		result += origin1[i] * origin2[i];
@@ -39,7 +41,7 @@ float avx_product(const vector<float>& origin1, const vector<float>& origin2, co
 	assert(size1 == size3);
 	int blocks = size1 / 8;//because 256bit =8*sizeof(float)
 	__m256 result256, temp1, temp2,temp3;
-	float result;
+	float result=0;
 	result256 = _mm256_setzero_ps();
 	for (int i = 0; i < blocks; i++)//maybe we can align these vector or just replace these vector with struct 
 	{
@@ -49,7 +51,10 @@ float avx_product(const vector<float>& origin1, const vector<float>& origin2, co
 		result256 = _mm256_add_ps(result256, _mm256_mul_ps(_mm256_mul_ps(temp1, temp2),temp3));
 	}
 	const float* temp = (const float*) &result256;
-	result = std::accumulate(temp, temp + 8, float(0.0));
+	for(int i=0;i<8;i++)
+	{
+		result+=temp[i];
+	}
 	for (int i = (size1 >> 3) << 3; i < size1; i++)
 	{
 		result += origin1[i] * origin2[i]*origin3[i];
@@ -68,7 +73,7 @@ float avx_product(const vector<float>& origin1, const vector<float>& origin2, co
 	assert(size1 == size3);
 	int blocks = size1 / 8;//because 256bit =8*sizeof(float)
 	__m256 result256, temp1, temp2, temp3,temp4;
-	float result;
+	float result=0;
 	result256 = _mm256_setzero_ps();
 	for (int i = 0; i < blocks; i++)//maybe we can align these vector or just replace these vector with struct 
 	{
@@ -80,7 +85,10 @@ float avx_product(const vector<float>& origin1, const vector<float>& origin2, co
 		result256 = _mm256_add_ps(result256, _mm256_mul_ps(_mm256_mul_ps(temp1, temp2), _mm256_mul_ps(temp3,temp4)));
 	}
 	const float* temp = (const float*) &result256;
-	result = std::accumulate(temp, temp + 8, float(0.0));
+	for(int i=0;i<8;i++)
+	{
+		result+=temp[i];
+	}
 	for (int i = (size1 >> 3) << 3; i < size1; i++)
 	{
 		result += origin1[i] * origin2[i] * origin3[i]*origin4[i];

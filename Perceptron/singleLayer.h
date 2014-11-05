@@ -4,6 +4,9 @@
 #include <list>
 #include <random>
 #include <assert.h>
+#include <iostream>
+using std::cout;
+using std::endl;
 using std::vector;
 using std::map;
 using std::list;
@@ -27,7 +30,7 @@ public:
 	const int dim ;//for the dimension
 
 	singleLayer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
-		inputValue(inDim, 0), isRemained(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
+		inputValue(inDim, 0), isRemained(inDim, 1), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
 		bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
 	{
 		
@@ -49,6 +52,7 @@ public:
 			isRemained[forShuffle[i]] = 0.0;
 		}
 	}
+
 	void dropoutRestore()
 	{
 		for (int i = 0; i < dim; i++)
@@ -66,7 +70,7 @@ public:
 	//}
 	virtual void forwardPropagate()
 	{
-		int scale = dim / remainNumber;
+		float scale = dim*1.0 / remainNumber;
 		for (int i = 0; i < dim; i++)//we can use sse
 		{
 			outputValue[i] = scale*currentFunc(inputValue[i]+bias[i])*isRemained[i];
@@ -94,5 +98,21 @@ public:
 			vector<float> temp(dim, 0);
 			batchBiasGradient=temp;//clear the batch sum
 		}
+	}
+	virtual void consoleValueOutput()
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			cout << outputValue[i] << ' ';
+		}
+		cout << endl << "current layer output value" << endl;
+	}
+	virtual void consoleBiasOutput()
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			cout << bias[i] << ' ';
+		}
+		cout << endl << "current layer  bias" << endl;
 	}
 };

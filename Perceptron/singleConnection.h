@@ -114,4 +114,16 @@ public:
 			};
 		});
 	}
+	virtual void consoleWeightOutput()
+	{
+		for (int i = 0; i < inputDim; i++)
+		{
+			for (int j = 0; j < outputDim; j++)
+			{
+				cout << connectWeight[i][j] << ' ';
+			}
+			cout << endl;
+		}
+		cout << "current connection weight" << endl;
+	}
 };

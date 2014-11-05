@@ -55,4 +55,14 @@ public:
 			feaMapConnect[i]->updateWeight(stepSize,nextLayer->featureMaps[i]->isRemained);
 		}
 	}
+	void consoleWeightOutput()
+	{
+		for (int i = 0; i < connectionNumber; i++)
+		{
+			feaMapConnect[i]->consoleWeightOutput();
+			auto temp = connectionRelation[i];
+			cout << "this connection connects the premap " << temp.first << " to aftermap " << temp.second << endl;
+		}
+		cout << "current multiConnection weight output finish" << endl<<endl;
+	}
 };

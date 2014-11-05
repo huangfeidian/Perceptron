@@ -45,5 +45,20 @@ public:
 			featureMaps[i]->updateBias(biasstep);
 		}
 	}
-	
+	void consoleValueOutput()
+	{
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->consoleValueOutput();
+		}
+		cout << "current multiLayer value output finish" << endl<<endl;
+	}
+	void consoleBiasOutput()
+	{
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->consoleBiasOutput();
+		}
+		cout << "current multiLayer bias output finish" << endl<<endl;
+	}
 };
