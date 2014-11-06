@@ -14,17 +14,17 @@ using std::list;
 class singleLayer
 {
 public:
-	std::vector<float> inputValue;
+	std::vector<double> inputValue;
 	//current.inputvalue[j]=sum(connection.connectionWeight[i][j]*connection.isConnected[i][j]*pre.outputValue[i]*pre.is_maskerd[i])
-	std::vector<float>  outputValue;
+	std::vector<double>  outputValue;
 	//outputValue[i]=current.currentFunc(current.inputValue[i]+current.bias[i])
-	std::vector<float>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
+	std::vector<double>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
 	int remainNumber ;//the number of nodes to dropout
-	std::vector<float>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
-	std::vector<float>  delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
-	std::vector<float>  bias;// for the bias
-	std::vector<float>  biasGradient;//biasGradient[i]=delta[i]
-	std::vector<float>  batchBiasGradient;//batch sum of biasGradient[i]
+	std::vector<double>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
+	std::vector<double>  delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
+	std::vector<double>  bias;// for the bias
+	std::vector<double>  biasGradient;//biasGradient[i]=delta[i]
+	std::vector<double>  batchBiasGradient;//batch sum of biasGradient[i]
 
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
 	const int dim ;//for the dimension
@@ -61,7 +61,7 @@ public:
 		}
 		remainNumber = dim;
 	}
-	//void updateInput(const vector<float>& partInput)//for now this function is not used
+	//void updateInput(const vector<double>& partInput)//for now this function is not used
 	//{
 	//	for (int i = 0; i < dim; i++)
 	//	{
@@ -79,15 +79,19 @@ public:
 	}
 	virtual void resetOutputGradient()
 	{
-		outputGradient = vector<float>(dim, 0);//clear the outputGradient
+		outputGradient = vector<double>(dim, 0);//clear the outputGradient
 	}
 	virtual void backPropagate()
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
-			biasGradient[i] = delta[i];
-			batchBiasGradient[i] += biasGradient[i];
+			if (isRemained[i] == 1.0)
+			{
+				delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
+				biasGradient[i] = delta[i];
+				batchBiasGradient[i] += biasGradient[i];
+			}
+		
 		}
 	}
 	virtual void updateBias(float biasStepsize)
@@ -95,7 +99,7 @@ public:
 		for (int i = 0; i < dim; i++)
 		{
 			bias[i] -= batchBiasGradient[i]*biasStepsize;
-			vector<float> temp(dim, 0);
+			vector<double> temp(dim, 0);
 			batchBiasGradient=temp;//clear the batch sum
 		}
 	}

@@ -9,13 +9,13 @@ public:
 	int totalCases;//how many input we have
 	const int inputDimension;//for a single case input the lenght of input vector
 	const int outputDimension;//the length of desired output vector;
-	vector<vector<float>> totalOutput;
-	vector<vector<float>> totalInput;
+	vector<vector<double>> totalOutput;
+	vector<vector<double>> totalInput;
 	input(int inDim, int outDim) :inputDimension(inDim), outputDimension(outDim)
 	{
 		totalCases = 0;
 	}
-	void addCase(vector<float>&& singleInputCase,vector<float>&& singleOutputCase)
+	void addCase(vector<double>&& singleInputCase,vector<double>&& singleOutputCase)
 	{
 		totalCases++;
 		totalInput.push_back(singleInputCase);

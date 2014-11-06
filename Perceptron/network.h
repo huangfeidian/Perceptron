@@ -8,7 +8,7 @@ public:
 	const int inputDim;
 	int outputDim;
 	lossFunc currentLoss;
-	vector<float> output;
+	vector<double> output;
 public:
 	std::vector<multiLayer*>allLayers;
 	std::vector<multiConnection*> allConnections;
@@ -36,7 +36,9 @@ public:
 	}
 	void dropout(int layerIndex, float dropoutRate)
 	{
+#ifdef CHECK_LEGITIMATE
 		assert(dropoutRate < 1 && dropoutRate>0);
+#endif
 		int numberToRemain = allLayers[layerIndex]->outputDim*(1 - dropoutRate);
 		for (int i = 0; i < allLayers[layerIndex]->featureMapNumber; i++)
 		{
@@ -51,7 +53,7 @@ public:
 			allLayers[layerIndex]->featureMaps[i]->dropoutRestore();
 		}
 	}
-	void  singleCaseOutput(const vector<float>& inputCase)
+	void  singleCaseOutput(const vector<double>& inputCase)
 	{
 		allLayers[0]->featureMaps[0]->outputValue=inputCase;
 		for (int i = 0; i < layerNum-1 ; i++)//do something to eliminate the vector copy next time
@@ -59,15 +61,16 @@ public:
 			allConnections[i]->forwardPropagate(allLayers[i], allLayers[i+1]);
 			allLayers[i + 1]->forwardPropagate();
 		}
+		output = allLayers[layerNum - 1]->featureMaps[0]->outputValue;
 	}
-	vector<float> setBackGradient(const vector<float>& realResult)
+	vector<double> setBackGradient(const vector<double>& realResult)
 	{
 		return currentLoss.diff(output, realResult);
 	}
-	void singleCaseBackProp(const vector<float>& realResult)
+	void singleCaseBackProp(const vector<double>& realResult)
 	{
 		auto initGradient = currentLoss.diff(output, realResult);
-		allLayers[layerNum ]->featureMaps[0]->outputGradient.swap(initGradient);
+		allLayers[layerNum-1 ]->featureMaps[0]->outputGradient.swap(initGradient);
 		for (int i = layerNum-1 ; i > 0; i--)
 		{
 			allLayers[i]->backPropagate();
@@ -80,10 +83,10 @@ public:
 		for(int index=0; index<layerNum - 1;index++)
 		{
 			allLayers[index+1]->updateBias(biasStepSize);
-			allConnections[index]->updateWeight(weightStepSize,allLayers[index+1]);
+			allConnections[index]->updateWeight(weightStepSize,allLayers[index]);
 		}
 	}
-	void trainbatch(const vector<vector<float>>& batchInput,const vector<vector<float>>& batchResult, int beginIndex,int batchSize)
+	void trainbatch(const vector<vector<double>>& batchInput,const vector<vector<double>>& batchResult, int beginIndex,int batchSize)
 	{
 		int totalSize = batchInput.size();
 		int currentBatch = (totalSize - beginIndex) > batchSize ? batchSize : (totalSize - beginIndex);

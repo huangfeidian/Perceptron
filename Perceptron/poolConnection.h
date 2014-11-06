@@ -1,25 +1,23 @@
 #include "singleConnection.h"
 #include <iostream>
 using namespace std;
-class pooling :public singleConnection
+class poolConnection :public singleConnection
 {
+public:
 	const int poolWindowCol;
 	const int poolWindowRow;
 	const int inputDimRow;
 	const int inputDimCol;
 	const int outputDimRow;
 	const int outputDimCol;
-	vector<vector<float>> preLayerWinMaxIndex;
-	pooling(int inDimRow, int inDimCol, int poolWinSize) :singleConnection(inDimCol*inDimRow, (inDimCol / poolWinSize)*(inDimRow / poolWinSize)), poolWindowCol(poolWinSize), poolWindowRow(poolWinSize)
-		, inputDimCol(inDimCol), inputDimRow(inDimRow), outputDimCol(inDimCol / poolWinSize), outputDimRow(inDimRow/poolWinSize)
+	vector<vector<double>> preLayerWinMaxIndex;
+	poolConnection(int inDimRow, int inDimCol, int poolWinSize) :singleConnection(inDimCol*inDimRow, (inDimCol / poolWinSize)*(inDimRow / poolWinSize)), poolWindowCol(poolWinSize),
+		poolWindowRow(poolWinSize)
+		, inputDimCol(inDimCol), inputDimRow(inDimRow), outputDimCol(inDimCol / poolWinSize), outputDimRow(inDimRow / poolWinSize)
+		, preLayerWinMaxIndex(inDimRow / poolWinSize, vector<double>(inDimCol / poolWinSize,0))
 	{
 		assert(inDimCol%poolWinSize == 0);
 		assert(inDimRow%poolWinSize == 0);
-		preLayerWinMaxIndex.reserve(outputDimRow);
-		for (int i = 0; i < outputDimRow; i++)
-		{
-			preLayerWinMaxIndex[i].reserve(outputDimCol);
-		}
 		for (int i = 0; i < inDimRow; i++)
 		{
 			for (int j = 0; j < inDimCol; j++)
@@ -28,7 +26,7 @@ class pooling :public singleConnection
 			}
 		}
 	}
-	void  forwardPropagate(const vector<float>& input, vector<float>& output)
+	void  forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
 		for (int i = 0; i < outputDimRow; i++)
 		{
@@ -52,7 +50,7 @@ class pooling :public singleConnection
 			}
 		}
 	}
-	void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient, const vector<float>& preLayerOutput)
+	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
 		//in this implementation the prelayeroutput is not used ,we just dont need it 
 	{
 		for (int i = 0; i < inputDimRow; i++)
@@ -71,7 +69,7 @@ class pooling :public singleConnection
 		}
 		//we dont record the weight ,because weight is useless in pool connection
 	}
-	void updateWeight(float stepSize, const vector<float>& isRemained)
+	void updateWeight(float stepSize, const vector<double>& isRemained)
 	{
 		//do nothing because  there are no weights here
 	}

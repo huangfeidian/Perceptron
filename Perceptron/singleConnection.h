@@ -7,21 +7,21 @@ using namespace std;
 class singleConnection
 {
 public:
-	std::vector<std::vector<float>> connectWeight;//the weights of connections between layers,currently i don't care the sparse before this demo works
+	std::vector<std::vector<double>> connectWeight;//the weights of connections between layers,currently i don't care the sparse before this demo works
 	const int inputDim;
 	const int outputDim;
 	std::vector<std::vector<int>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
-	std::vector<std::vector<float>> weightGradient;//for the Gradient of the weight
-	std::vector<std::vector<float>> batchWeightGradient;//for the batch sum of  Gradient of the weight
+	std::vector<std::vector<double>> weightGradient;//for the Gradient of the weight
+	std::vector<std::vector<double>> batchWeightGradient;//for the batch sum of  Gradient of the weight
 	std::vector<std::map<int, int>> weightFromInput;//weightFromInput[i][j]=connectWeight[i][j]
 	std::vector<std::map<int, int>> weightToOutput;//weightToOutput[i][j]=connecWeight[j][i]
 
 	int totalConnections;//sum of  all isConnected[i][j]!=0
 	
 
-	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0), connectWeight(inDim, vector<float>(outDim,0))
-		, isConnected(inDim, vector<int>(outDim, 0)), weightGradient(inDim, vector<float>(outDim, 0)), weightFromInput(inDim, map<int, int>()),
-		weightToOutput(outDim, map<int, int>())
+	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0), connectWeight(inDim, vector<double>(outDim,0))
+		, isConnected(inDim, vector<int>(outDim, 0)), weightGradient(inDim, vector<double>(outDim, 0)), weightFromInput(inDim, map<int, int>()),
+		weightToOutput(outDim, map<int, int>()), batchWeightGradient(inDim, vector<double>(outDim, 0))
 	{
 		for (int i = 0; i < inDim; i++)
 		{
@@ -66,7 +66,7 @@ public:
 		weightFromInput[fromIndex][toIndex] = toIndex;
 		weightToOutput[toIndex][fromIndex] = fromIndex;
 	}
-	virtual void forwardPropagate(const vector<float>& input, vector<float>& output)
+	virtual void forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
 		accelerateFor ( 0, outputDim,[&](int i)//we can use multithread or multithread
 		{
@@ -78,7 +78,7 @@ public:
 			output[i] += propagateResult;
 		});
 	}
-	virtual void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient, const vector<float>& preLayerOutput)
+	virtual void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
 	{
 		//we can gain more parallel
 		accelerateFor(0,  inputDim,[&](int i)//for the layer nodes
@@ -103,7 +103,7 @@ public:
 		});
 	}
 	
-	virtual void updateWeight(float stepSize, const vector<float>& isRemained)
+	virtual void updateWeight(float stepSize, const vector<double>& isRemained)
 	{
 		accelerateFor ( 0, inputDim,[&](int i)
 		{

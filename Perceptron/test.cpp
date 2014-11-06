@@ -1,38 +1,45 @@
 
-#include <iostream>
-#include "network.h"
-#include "fullConnection.h"
+#include "headIntro.h"
 using namespace std;
 int main()
 {
-	network currentNet(10, LOSSFUNC::MSE);
-	fullConnection  hehe(10, 5);
-	singleLayer thefirstconnect(5, ACTIVATEFUNC::SIGMOID);
-	multiLayer thefirstlayer(1,5);
-	thefirstlayer.addSingleLayer(&thefirstconnect);
-	multiConnection thefirstConnection(1, 1);
-	thefirstConnection.addConnection(0, 0, &hehe);
-	currentNet.addLayerAndConnection(&thefirstlayer, &thefirstConnection);
-	fullConnection  haha(5, 1);
-	singleLayer thesecondconnect(1, ACTIVATEFUNC::SIGMOID);
-	multiLayer thesecondlayer(1, 1);
-	thesecondlayer.addSingleLayer(&thesecondconnect);
-	multiConnection thesecondConnection(1, 1);
-	thesecondConnection.addConnection(0, 0, &haha);
-	currentNet.addLayerAndConnection(&thesecondlayer, &thesecondConnection);
-	vector<float> lalallatest{ 1, 1,1,1,1,1,1,1,1,1 };
+	vector<int> trainLabels, testLabels;
+	vector<vector<double>> trainImages, testImages;
+	//parse_mnist_labels("train-labels.idx1-ubyte", &trainLabels);
+	//parse_mnist_images("train-images.idx3-ubyte", &trainImages);
+	//parse_mnist_labels("t10k-labels.idx1-ubyte", &testLabels);
+	//parse_mnist_images("t10k-images.idx3-ubyte", &testImages);
+	network currentNet(32*32, LOSSFUNC::MSE);
+	fullConnection thefirstsingleconnection(32*32,16*16);
+	multiConnection thefirstmulticonnection(1, 1);
+	thefirstmulticonnection.addConnection(0, 0, &thefirstsingleconnection);
+	singleLayer thefirstsinglelayer(16*16,ACTIVATEFUNC::SIGMOID);
+	multiLayer thefirstmultilayer(1,16*16);
+	thefirstmultilayer.addSingleLayer(&thefirstsinglelayer);
+	currentNet.addLayerAndConnection(&thefirstmultilayer, &thefirstmulticonnection);
+	fullConnection  thesecondsingleconnection(16*16, 8*8);
+	multiConnection thesecondmulticonnection(1, 1);
+	thesecondmulticonnection.addConnection(0, 0, &thesecondsingleconnection);
+	singleLayer thesecondsinglelayer(8*8, ACTIVATEFUNC::SIGMOID);
+	multiLayer thesecondmultilayer(1, 8*8);
+	thesecondmultilayer.addSingleLayer(&thesecondsinglelayer);
+	currentNet.addLayerAndConnection(&thesecondmultilayer, &thesecondmulticonnection);
+	fullConnection  thethirdsingleconnection(8*8, 10);
+	multiConnection thethirdmulticonnection(1, 1);
+	thethirdmulticonnection.addConnection(0, 0, &thethirdsingleconnection);
+	singleLayer thethirdsinglelayer(10, ACTIVATEFUNC::SIGMOID);
+	multiLayer thethirdmultilayer(1, 10);
+	thethirdmultilayer.addSingleLayer(&thethirdsinglelayer);
+	currentNet.addLayerAndConnection(&thethirdmultilayer, &thethirdmulticonnection);
+	vector<double> lalallatest(32*32,1);
 	currentNet.singleCaseOutput(lalallatest);
-	int i = 1;
-	for (int i = 1; i < 3; i++)
+	vector<double> result{ 1,0,0,0,0,0,0,0,0,0 };
+	for (int i = 0; i < 40; i++)
 	{
-		currentNet.allLayers[i]->consoleValueOutput();
+		currentNet.singleCaseBackProp(result);
+		currentNet.updateNetwork(0.8, 0.8);
+		cout << "after backPropagate" << endl;
+		currentNet.singleCaseOutput(lalallatest);
 	}
-	cout << "**************************" << endl;
-	for (int i = 1; i < 3; i++)
-	{
-		currentNet.allLayers[i]->consoleBiasOutput();
-	}
-	currentNet.allConnections[0]->consoleWeightOutput();
-	currentNet.allConnections[1]->consoleWeightOutput();
-	cout << currentNet.allLayers[2]->featureMaps[0]->outputValue[0]<<endl;
+
 }

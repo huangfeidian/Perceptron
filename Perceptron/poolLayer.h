@@ -1,7 +1,8 @@
 #include "singleLayer.h"
 using namespace std;
-class poolLayer :singleLayer
+class poolLayer :public singleLayer
 {
+public:
 	const int dimCol;
 	const int dimRow;
 	poolLayer(int inDimRow, int inDimCol) :singleLayer(inDimCol*inDimRow, ACTIVATEFUNC::IDENTITY), dimCol(inDimCol), dimRow(inDimRow)

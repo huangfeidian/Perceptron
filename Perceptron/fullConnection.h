@@ -3,8 +3,8 @@
 class fullConnection :public singleConnection
 {
 public:
-	vector<vector<float>> reverseWeight;//reverseWeight[i][j]=connectweight[j][i]
-	fullConnection(int inDim, int outDim) :singleConnection(inDim, outDim), reverseWeight(outDim, vector<float>(inDim,0))
+	vector<vector<double>> reverseWeight;//reverseWeight[i][j]=connectweight[j][i]
+	fullConnection(int inDim, int outDim) :singleConnection(inDim, outDim), reverseWeight(outDim, vector<double>(inDim,0))
 	{
 		initWeight();
 	}
@@ -32,7 +32,7 @@ public:
 			}
 		}
 	}
-	void forwardPropagate(const vector<float>& input, vector<float>& output)
+	void forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
 		for (int i = 0; i < outputDim; i++)
 		{
@@ -41,7 +41,7 @@ public:
 			output[i] += propagateResult;
 		};
 	}
-	void backPropagate(const vector<float>& nextLayerDelta, vector<float>& preLayerGradient,const vector<float>& preLayerOutput)
+	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient,const vector<double>& preLayerOutput)
 	{
 		accelerateFor(0,inputDim,[&](int i)
 		{
@@ -56,7 +56,7 @@ public:
 		});
 		//the weightGradient
 	}
-	void updateWeight(float stepSize, const vector<float>& isRemained)
+	void updateWeight(float stepSize, const vector<double>& isRemained)
 	{
 		accelerateFor(0, inputDim, [&](int i)
 		{

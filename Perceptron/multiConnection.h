@@ -20,6 +20,7 @@ public:
 	}
 	void addConnection(int preMapIndex, int afterMapindex, singleConnection* currrentConnection)
 	{
+
 		feaMapConnect.push_back(currrentConnection);
 		preToAfter[preMapIndex][afterMapindex] = connectionNumber;
 		afterFromPre[afterMapindex][preMapIndex] = connectionNumber;
@@ -48,11 +49,11 @@ public:
 			}
 		}
 	}
-	void updateWeight(float stepSize,const multiLayer* nextLayer)
+	void updateWeight(float stepSize,const multiLayer* preLayer)
 	{
 		for (int i = 0; i < connectionNumber; i++)
 		{
-			feaMapConnect[i]->updateWeight(stepSize,nextLayer->featureMaps[i]->isRemained);
+			feaMapConnect[i]->updateWeight(stepSize,preLayer->featureMaps[connectionRelation[i].first]->isRemained);
 		}
 	}
 	void consoleWeightOutput()

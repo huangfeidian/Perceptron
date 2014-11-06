@@ -11,8 +11,8 @@ enum class LOSSFUNC
 	CROSSENTROPHY
 };
 
-typedef float(*evalFunctype)(const vector<float>& A, const vector<float>& B);
-typedef vector<float>(*diffFunctype)(const vector<float>& A, const vector<float>& B);
+typedef float(*evalFunctype)(const vector<double>& A, const vector<double>& B);
+typedef vector<double>(*diffFunctype)(const vector<double>& A, const vector<double>& B);
 //diffrentiation is done for A not for B ,watch out
 
 
@@ -20,7 +20,7 @@ class lossFunc
 {
 private:
 	LOSSFUNC currentLossType;
-	float evalMse(const vector<float>& A, const vector<float>& B)
+	float evalMse(const vector<double>& A, const vector<double>& B)
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
@@ -34,12 +34,12 @@ private:
 		}
 		return result;
 	}
-	vector<float> diffMse(const vector<float>& A, const vector<float>& B)//we can use avx
+	vector<double> diffMse(const vector<double>& A, const vector<double>& B)//we can use avx
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
 		sizeB = B.size();
-		vector<float> result(sizeA);
+		vector<double> result(sizeA);
 		int index = 0;
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
@@ -48,7 +48,7 @@ private:
 		}
 		return result;
 	}
-	float evalCrossentrophy(const vector<float>& A, const vector<float>& B)
+	float evalCrossentrophy(const vector<double>& A, const vector<double>& B)
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
@@ -62,12 +62,12 @@ private:
 		}
 		return result;
 	}
-	vector<float> diffCrossentrophy(const vector<float>& A, const vector<float>& B)
+	vector<double> diffCrossentrophy(const vector<double>& A, const vector<double>& B)
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
 		sizeB = B.size();
-		vector<float> result(sizeA);
+		vector<double> result(sizeA);
 		int index = 0;
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
@@ -80,7 +80,7 @@ public:
 	lossFunc(LOSSFUNC inFuncType):currentLossType(inFuncType)
 	{
 	}
-	float operator()(const vector<float>& trainResult,const vector<float>& realResult)
+	float operator()(const vector<double>& trainResult,const vector<double>& realResult)
 	{
 		if (currentLossType == LOSSFUNC::MSE)
 		{
@@ -92,7 +92,7 @@ public:
 		}
 		
 	}
-	float eval(vector<float>& trainResult, vector<float> realResult)
+	float eval(vector<double>& trainResult, vector<double> realResult)
 	{
 		if (currentLossType == LOSSFUNC::MSE)
 		{
@@ -103,7 +103,7 @@ public:
 			return evalCrossentrophy(trainResult, realResult);
 		}
 	}
-	vector<float> diff(vector<float>& trainResult,const vector<float> realResult)
+	vector<double> diff(vector<double>& trainResult,const vector<double> realResult)
 	{
 		if (currentLossType == LOSSFUNC::MSE)
 		{
