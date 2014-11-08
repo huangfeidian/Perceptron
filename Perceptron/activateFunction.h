@@ -8,40 +8,40 @@ enum class ACTIVATEFUNC
 	IDENTITY,
 	RECTLINEAR
 };
-typedef float(*functype)(float);
-float evalTanh(float input)
+typedef double(*functype)(double);
+double evalTanh(double input)
 {
-	float temp = std::exp(2*input);
-	float result = 1 - 2 / (temp + 1);
+	double temp = std::exp(-2*input);
+	double result = 1 - 2 / (temp + 1);
 	return result;
 }
-float diffTanh(float input)
+double diffTanh(double input)
 {
 	return 1 - input*input;
 }
-float evalSigmoid(float input)
+double evalSigmoid(double input)
 {
-	float temp = std::exp(-1*input);
-	float result = 1 / (1 + temp);
+	double temp = std::exp(-1*input);
+	double result = 1 / (1 + temp);
 	return result;
 }
-float diffSigmoid(float input)
+double diffSigmoid(double input)
 {
 	return (1 - input)*input;
 }
-float evalIdentity(float input)
+double evalIdentity(double input)
 {
 	return input;
 }
-float diffIdentity(float input)
+double diffIdentity(double input)
 {
 	return 1;
 }
-float evalRectifiedLinear(float input)
+double evalRectifiedLinear(double input)
 {
 	return input > 0.0 ? input : 0.0;
 }
-float diffRectifiedLinear(float input)
+double diffRectifiedLinear(double input)
 {
 	return input > 0.0 ? 1: 0.0;
 }
@@ -57,15 +57,15 @@ public:
 	{
 
 	}
-	float operator()(float input)const
+	double operator()(double input)const
 	{
 		return (*currentEvalFunc)(input);
 	}
-	float eval(float input)const
+	double eval(double input)const
 	{
 		return (*currentEvalFunc)(input);
 	}
-	float diff(float input)const
+	double diff(double input)const
 	{
 		return (*currentDiffFunc)(input);
 	}

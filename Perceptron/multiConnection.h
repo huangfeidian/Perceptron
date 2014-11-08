@@ -29,32 +29,32 @@ public:
 	}
 	void forwardPropagate(const multiLayer* preLayers, const multiLayer* afterLayers)
 	{
-		for (int i = 0; i < afterFeaMapNumber; i++)
+		accelerateFor (  0, afterFeaMapNumber,[&](int i)
 		{
 			for (auto currentConnect : afterFromPre[i])
 			{
 				feaMapConnect[currentConnect.second]->forwardPropagate(preLayers->featureMaps[currentConnect.first]->outputValue, 
 					afterLayers->featureMaps[i]->inputValue);
 			}
-		}
+		});
 	}
 	void backPropagate(const multiLayer* afterLayers, multiLayer* preLayers)
 	{
-		for (int i = 0; i < preFeaMapNumber; i++)
+		accelerateFor ( 0,preFeaMapNumber, [&](int i)
 		{
 			for (auto currentConnect : preToAfter[i])
 			{
 				feaMapConnect[currentConnect.second]->backPropagate(afterLayers->featureMaps[currentConnect.first]->delta, preLayers->featureMaps[i]->outputGradient
 					,preLayers->featureMaps[i]->outputValue);
 			}
-		}
+		});
 	}
-	void updateWeight(float stepSize,const multiLayer* preLayer)
+	void updateWeight(double stepSize,const multiLayer* preLayer)
 	{
-		for (int i = 0; i < connectionNumber; i++)
+		accelerateFor( 0, connectionNumber,[&](int i)
 		{
-			feaMapConnect[i]->updateWeight(stepSize,preLayer->featureMaps[connectionRelation[i].first]->isRemained);
-		}
+			feaMapConnect[i]->updateWeight(stepSize);
+		});
 	}
 	void consoleWeightOutput()
 	{

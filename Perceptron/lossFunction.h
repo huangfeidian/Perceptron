@@ -11,7 +11,7 @@ enum class LOSSFUNC
 	CROSSENTROPHY
 };
 
-typedef float(*evalFunctype)(const vector<double>& A, const vector<double>& B);
+typedef double(*evalFunctype)(const vector<double>& A, const vector<double>& B);
 typedef vector<double>(*diffFunctype)(const vector<double>& A, const vector<double>& B);
 //diffrentiation is done for A not for B ,watch out
 
@@ -20,16 +20,16 @@ class lossFunc
 {
 private:
 	LOSSFUNC currentLossType;
-	float evalMse(const vector<double>& A, const vector<double>& B)
+	double evalMse(const vector<double>& A, const vector<double>& B)
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
 		sizeB = B.size();
-		float result = 0;
+		double result = 0;
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
 		{
-			float temp = A[i] - B[i];
+			double temp = A[i] - B[i];
 			result += temp*temp;
 		}
 		return result;
@@ -40,25 +40,24 @@ private:
 		sizeA = A.size();
 		sizeB = B.size();
 		vector<double> result(sizeA);
-		int index = 0;
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
 		{
-			result[index] = 2 * (A[index] - B[index]);
+			result[i] = 2 * (A[i] - B[i]);
 		}
 		return result;
 	}
-	float evalCrossentrophy(const vector<double>& A, const vector<double>& B)
+	double evalCrossentrophy(const vector<double>& A, const vector<double>& B)
 	{
 		int sizeA, sizeB;
 		sizeA = A.size();
 		sizeB = B.size();
-		float result = 0;
+		double result = 0;
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
 		{
-			float temp = A[i] * log(B[i]) + (1 - A[i])*log(1 - B[i]);
-			result += -temp;
+			double temp = B[i] * log(A[i]) + (1 - B[i])*log(1 - A[i]);
+			result -= temp;
 		}
 		return result;
 	}
@@ -67,12 +66,20 @@ private:
 		int sizeA, sizeB;
 		sizeA = A.size();
 		sizeB = B.size();
-		vector<double> result(sizeA);
-		int index = 0;
+		vector<double> result(sizeA,0);
 		assert(sizeA == sizeB);
 		for (int i = 0; i < sizeA; i++)
 		{
-			result[index] = (A[index] - B[index]) / (A[index] * (1 - A[index]));
+			//result[i] = B[i] / A[i] -(1 - B[i]) / (1 - A[i]);//beware there is something to nan 
+
+		/*	double temp_1, temp_2, temp_3;
+			temp_1 =1+ A[i];
+			temp_2 = A[i]*A[i];
+			temp_3 = (1+temp_2)*temp_1;
+			temp_2 = temp_2*temp_2;
+			temp_3 = temp_3*(1 + temp_2);
+			result[i] = B[i] / A[i] - (1 - B[i] )* temp_3;*/
+			result[i] = (A[i] - B[i]) / (A[i] * (1 - A[i]));
 		}
 		return result;
 	}
@@ -80,7 +87,7 @@ public:
 	lossFunc(LOSSFUNC inFuncType):currentLossType(inFuncType)
 	{
 	}
-	float operator()(const vector<double>& trainResult,const vector<double>& realResult)
+	double operator()(const vector<double>& trainResult,const vector<double>& realResult)
 	{
 		if (currentLossType == LOSSFUNC::MSE)
 		{
@@ -92,7 +99,7 @@ public:
 		}
 		
 	}
-	float eval(vector<double>& trainResult, vector<double> realResult)
+	double eval(vector<double>& trainResult, vector<double> realResult)
 	{
 		if (currentLossType == LOSSFUNC::MSE)
 		{

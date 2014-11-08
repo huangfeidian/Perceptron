@@ -70,7 +70,7 @@ public:
 	//}
 	virtual void forwardPropagate()
 	{
-		float scale = dim*1.0 / remainNumber;
+		double scale = dim*1.0 / remainNumber;
 		for (int i = 0; i < dim; i++)//we can use sse
 		{
 			outputValue[i] = scale*currentFunc(inputValue[i]+bias[i])*isRemained[i];
@@ -94,13 +94,14 @@ public:
 		
 		}
 	}
-	virtual void updateBias(float biasStepsize)
+	virtual void updateBias(double biasStepsize)
 	{
 		for (int i = 0; i < dim; i++)
 		{
 			bias[i] -= batchBiasGradient[i]*biasStepsize;
-			vector<double> temp(dim, 0);
-			batchBiasGradient=temp;//clear the batch sum
+			batchBiasGradient[i]=0;//clear the batch sum
+			outputGradient[i] = 0;
+			delta[i] = 0;
 		}
 	}
 	virtual void consoleValueOutput()

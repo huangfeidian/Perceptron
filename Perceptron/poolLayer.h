@@ -27,9 +27,13 @@ public:
 			delta[i] = outputGradient[i];
 		}
 	}
-	void updateBias(float biasStepsize)
+	void updateBias(double biasStepsize)
 	{
-		// do nothing
+		for (int i = 0; i < dim; i++)
+		{
+			outputGradient[i] = 0;
+			delta[i] = 0;
+		}
 	}
 	void consoleBiasOutput()
 	{

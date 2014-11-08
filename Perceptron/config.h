@@ -1,8 +1,8 @@
 
 
-//#define WINDOWS_PPL
+#define WINDOWS_PPL
 
 //#define INTEL_TBB
 
-#define CHECK_LEGITIMATE
-//#define USE_AVX
+//#define CHECK_LEGITIMATE
+#define USE_AVX

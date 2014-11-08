@@ -13,7 +13,7 @@ template<typename T> T* reverse_endian(T* p)
 	//上次看到改变大小端的时候还是在MD5里面
 	return p;
 }
-void parse_mnist_labels(const std::string& label_file, std::vector<int> *labels)
+void parse_mnist_labels(const std::string& label_file, std::vector<vector<double>>& labels)
 {
 	std::ifstream ifs(label_file.c_str(), std::ios::in | std::ios::binary);//基本就没有文本格式来打开文件 
 
@@ -35,11 +35,14 @@ void parse_mnist_labels(const std::string& label_file, std::vector<int> *labels)
 	assert((magic_number == 0x00000801 &&num_items > 0));
 #endif
 	//oh I see
-	for (int i = 0; i < num_items; i++)
+	vector<double> temp{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	for (unsigned int i = 0; i < num_items; i++)
 	{
 		char label;
 		ifs.read((char*) &label, 1);
-		labels->push_back((int) label);
+		temp[label] = 1;
+		labels.push_back(temp);
+		temp[label] = 0;
 	}
 }
 
@@ -100,7 +103,7 @@ void parse_mnist_image(std::ifstream& ifs,
 }
 
 void parse_mnist_images(const std::string& image_file,
-						std::vector<std::vector<double>> *images,
+						std::vector<std::vector<double>>&images,
 						double scale_min = -1.0,
 						double scale_max = 1.0,
 						int x_padding = 2,
@@ -120,6 +123,6 @@ void parse_mnist_images(const std::string& image_file,
 	{
 		std::vector<double> image;
 		parse_mnist_image(ifs, header, scale_min, scale_max, x_padding, y_padding, image);
-		images->push_back(image);
+		images.push_back(image);
 	}
 }

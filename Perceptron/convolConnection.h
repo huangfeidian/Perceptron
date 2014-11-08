@@ -22,7 +22,7 @@ public:
 		//watchout you must ensure inDimRow>=window and inDimColumn>=window
 	{
 		std::default_random_engine dre;
-		std::uniform_real_distribution<float> di(-1.0, 1.0);
+		std::uniform_real_distribution<double> di(-1.0, 1.0);
 		vector<double> tempVec(window, 0);
 		for (int i = 0; i < window; i++)
 		{
@@ -65,7 +65,7 @@ public:
 	}
 	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
 	{
-		for (int i = 0; i < windowRow; i++)
+		accelerateFor ( 0,  windowRow,[&](int i)
 		{
 			for (int j = 0; j < windowColumn; j++)
 			{
@@ -79,18 +79,18 @@ public:
 				batchWinWeiGradient[i][j] += windowWeightGradient[i][j];
 				windowWeightGradient[i][j] = 0;
 			}
-		}
-		for (int i = 0; i < inputDim; i++)
+		});
+		accelerateFor(  0,  inputDim,[&](int i)
 		{
-			float propagateResult = 0;
+			double propagateResult = 0;
 			for (auto singleConnection : weightFromInput[i])
 			{
-				propagateResult += nextLayerDelta[singleConnection.first] * connectWeight[i][singleConnection.second];
+				propagateResult += nextLayerDelta[singleConnection] * connectWeight[i][singleConnection];
 			}
-			preLayerGradient[i] = propagateResult;
-		}
+			preLayerGradient[i]+= propagateResult;
+		});
 	}
-	void updateWeight(float stepSize, const vector<double>& isRemained)
+	void updateWeight(double stepSize)
 	{
 		for (int i = 0; i < windowRow; i++)
 		{

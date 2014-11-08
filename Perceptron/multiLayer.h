@@ -19,31 +19,31 @@ public:
 	}
 	void resetOutputGradient()
 	{
-		for (int i = 0; i < featureMapNumber; i++)
+		accelerateFor(0, featureMapNumber, [&](int i)
 		{
 			featureMaps[i]->resetOutputGradient();//clear the outputGradient
-		}
+		});
 	}
 	void forwardPropagate()
 	{
-		for (int i = 0; i < featureMapNumber; i++)
+		accelerateFor (0,featureMapNumber,[&](int i)
 		{
 			featureMaps[i]->forwardPropagate();
-		}
+		});
 	}
 	void backPropagate()
 	{
-		for (int i = 0; i < featureMapNumber; i++)
+		accelerateFor( 0, featureMapNumber,[&](int i)
 		{
 			featureMaps[i]->backPropagate();
-		}
+		});
 	}
-	void updateBias(float biasstep)
+	void updateBias(double biasstep)
 	{
-		for (int i = 0; i < featureMapNumber; i++)
+		accelerateFor( 0, featureMapNumber,[&](int i)
 		{
 			featureMaps[i]->updateBias(biasstep);
-		}
+		});
 	}
 	void consoleValueOutput()
 	{

@@ -30,9 +30,6 @@
     <ClInclude Include="mnistParser.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="train.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="multiLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -61,12 +58,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="fullConnection.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="lossFunctionConcrete.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="headIntro.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
