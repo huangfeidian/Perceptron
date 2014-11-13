@@ -11,7 +11,7 @@ enum class ACTIVATEFUNC
 typedef double(*functype)(double);
 double evalTanh(double input)
 {
-	double temp = std::exp(-2*input);
+	double temp = std::exp(2*input);
 	double result = 1 - 2 / (temp + 1);
 	return result;
 }

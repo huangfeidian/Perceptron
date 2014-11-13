@@ -60,6 +60,12 @@
     <ClInclude Include="fullConnection.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="convolLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fullLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">

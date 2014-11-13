@@ -3,6 +3,7 @@
 #include "accelerateFor.h"
 #include <algorithm>
 #include <set>
+#include <ctime>
 #pragma once
 using namespace std;
 class singleConnection
@@ -24,13 +25,7 @@ public:
 		, isConnected(inDim, vector<int>(outDim, 0)), weightGradient(inDim, vector<double>(outDim, 0)), weightFromInput(inDim, vector<int>()),
 		weightToOutput(outDim, vector< int>()), batchWeightGradient(inDim, vector<double>(outDim, 0))
 	{
-		for (int i = 0; i < inDim; i++)
-		{
-			for (int j = 0; j < outDim; j++)
-			{
-				isConnected[i][j] = 0;
-			}
-		}
+		
 	}
 	void setConnected(const vector<vector<bool>>& inputIsConnected)
 	{
@@ -44,7 +39,7 @@ public:
 	}
 	void initWeight()
 	{
-		std::default_random_engine dre;
+		std::default_random_engine dre(clock());
 		std::uniform_real_distribution<double> di(-1.0, 1.0);
 		double tempWeight;
 		for (int i = 0; i < inputDim; i++)
@@ -126,5 +121,21 @@ public:
 			cout << endl;
 		}
 		cout << "current connection weight" << endl;
+	}
+	virtual void fileWeightOutput(ofstream& outFile)
+	{
+		for (int i = 0; i < inputDim; i++)
+		{
+			for (int j = 0; j < outputDim; j++)
+			{
+				outFile << connectWeight[i][j] << ' ';
+			}
+			outFile << endl;
+		}
+		outFile<< "**************************" << endl;
+	}
+	virtual void loadWeightFromFile(ifstream& inputFile)
+	{
+
 	}
 };

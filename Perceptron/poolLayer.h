@@ -5,38 +5,53 @@ class poolLayer :public singleLayer
 public:
 	const int dimCol;
 	const int dimRow;
-	poolLayer(int inDimRow, int inDimCol) :singleLayer(inDimCol*inDimRow, ACTIVATEFUNC::IDENTITY), dimCol(inDimCol), dimRow(inDimRow)
+	double poolBias;
+	double poolBiasGradient;
+	double batchPoolBiasGrad;
+	poolLayer(int inDimRow, int inDimCol,ACTIVATEFUNC currentActiFun) :singleLayer(inDimCol*inDimRow, currentActiFun), dimCol(inDimCol), dimRow(inDimRow)
 	{
-		for (int i = 0; i < dim; i++)
-		{
-			bias[i] = 0;
-		}
+		default_random_engine dre(clock());
+		uniform_real_distribution<double> ran(-1.0, 1.0);
+		poolBias = ran(dre);
+		poolBiasGradient = 0;
+		batchPoolBiasGrad = 0;
 	}
 	void forwardPropagate()
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			outputValue[i] = inputValue[i];
+			outputValue[i] = currentFunc(inputValue[i]+poolBias);
 			inputValue[i] = 0;
 		}
 	}
 	void backPropagate()
 	{
+		poolBiasGradient = 0;
 		for (int i = 0; i < dim; i++)
 		{
-			delta[i] = outputGradient[i];
+			delta[i] = outputGradient[i]*currentFunc.diff(outputValue[i]);
+			poolBiasGradient+= delta[i];
+			outputGradient[i] = 0;
 		}
+		batchPoolBiasGrad += poolBiasGradient;
 	}
 	void updateBias(double biasStepsize)
 	{
-		for (int i = 0; i < dim; i++)
-		{
-			outputGradient[i] = 0;
-			delta[i] = 0;
-		}
+		batchPoolBiasGrad = batchPoolBiasGrad / dim;
+		poolBias -= biasStepsize*batchPoolBiasGrad;
+		batchPoolBiasGrad = 0;
 	}
 	void consoleBiasOutput()
 	{
-		cout << "this layer is pool layer ,no bias " << endl;
+		cout <<poolBias<< endl;
+	}
+	void fileBiasOutput(ofstream& outFile) 
+	{
+		outFile << poolBias<<endl;
+	}
+	void loadBiasFromFile(ifstream& inputFile)
+	{
+		inputFile >> poolBias;
+		inputFile.get();
 	}
 };

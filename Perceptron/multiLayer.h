@@ -61,4 +61,21 @@ public:
 		}
 		cout << "current multiLayer bias output finish" << endl<<endl;
 	}
+	void fileBiasOutput(ofstream& outFile)
+	{
+		outFile << " multimap bias output" << endl;
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->fileBiasOutput(outFile);
+		}
+	}
+	void loadBiasFromFile(ifstream& inputFile)
+	{
+		char temp[100];
+		inputFile.getline(temp, 99);//eat the illlustration line
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->loadBiasFromFile(inputFile);
+		}
+	}
 };

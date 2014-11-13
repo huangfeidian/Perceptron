@@ -19,7 +19,7 @@ public:
 	}
 	void initWeight()
 	{
-		std::default_random_engine dre;
+		std::default_random_engine dre(clock());
 		std::uniform_real_distribution<double> di(-1.0, 1.0);
 		
 		for (int i = 0; i < inputDim; i++)
@@ -78,5 +78,29 @@ public:
 			cout << endl;
 		}
 		cout << "current full connection weight" << endl;
+	}
+	void fileWeightOutput(ofstream& outFile)
+	{
+		for (int i = 0; i < inputDim; i++)
+		{
+			for (int j = 0; j < outputDim; j++)
+			{
+				outFile << connectWeight[i][j] << ' ';
+			}
+			outFile << endl;
+		}
+		outFile << "current full connection weight" << endl;
+	}
+	void loadWeightFromFile(ifstream& inputFile)
+	{
+		for (int i = 0; i < inputDim; i++)
+		{
+			for (int j = 0; j < outputDim; j++)
+			{
+				inputFile >> connectWeight[i][j];
+			}
+			inputFile.get();
+			inputFile.get();//eat the new line
+		}
 	}
 };

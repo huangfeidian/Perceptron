@@ -5,6 +5,8 @@
 #include "poolConnection.h"
 #include "poolLayer.h"
 #include "fullConnection.h"
+#include "convolLayer.h"
+#include "fullLayer.h"
 class network
 {
 public:
@@ -52,7 +54,7 @@ public:
 		multiConnection* currentConvolutionConnection = new multiConnection(preLayerMapNumber, nextLayerMapNumber);
 		for (int i = 0; i < nextLayerMapNumber; i++)
 		{
-			singleLayer* currentSingleConvolutionLayer = new singleLayer(currentLayerOutDim, currentActivateFunction);
+			convolLayer* currentSingleConvolutionLayer = new convolLayer(preLayerImageSize - windowSize + 1, preLayerImageSize - windowSize + 1,currentActivateFunction);
 			currentConvolutionLayer->addSingleLayer(currentSingleConvolutionLayer);
 		}
 		for (int i = 0; i < preLayerMapNumber; i++)
@@ -68,7 +70,7 @@ public:
 		}
 		addLayerAndConnection(currentConvolutionLayer, currentConvolutionConnection);
 	}
-	void addPoolLayerAndConnection(int preLayerImageSize, int windowSize)
+	void addPoolLayerAndConnection(int preLayerImageSize, int windowSize, ACTIVATEFUNC currentActivateFunction)
 	{
 
 #ifdef CHECK_LEGITIMATE
@@ -81,7 +83,7 @@ public:
 		multiConnection* currentPoolConnnection = new multiConnection(preLayerMapNumber, preLayerMapNumber);
 		for (int i = 0; i < preLayerMapNumber; i++)
 		{
-			poolLayer* currentSinglePoolLayer = new poolLayer(preLayerImageSize / windowSize, preLayerImageSize / windowSize);
+			poolLayer* currentSinglePoolLayer = new poolLayer(preLayerImageSize / windowSize, preLayerImageSize / windowSize,currentActivateFunction);
 			poolConnection* currentSinglePoolConnection = new poolConnection(preLayerImageSize, preLayerImageSize, windowSize);
 			currentPoolLayer->addSingleLayer(currentSinglePoolLayer);
 			currentPoolConnnection->addConnection(i, i, currentSinglePoolConnection);
@@ -93,7 +95,7 @@ public:
 
 		multiConnection* currentFullConnection = new multiConnection(allLayers[layerNum - 1]->featureMapNumber, 1);
 		multiLayer* currentFullLayer = new multiLayer(1, fullLayerDim);
-		singleLayer* currentSingleFullLayer = new singleLayer(fullLayerDim, currentActivateFunction);
+		fullLayer* currentSingleFullLayer = new fullLayer(fullLayerDim, currentActivateFunction);
 		currentFullLayer->addSingleLayer(currentSingleFullLayer);
 		//todo
 		for (int i = 0; i < allLayers[layerNum - 1]->featureMapNumber; i++)
@@ -170,5 +172,20 @@ public:
 			singleCaseBackProp(batchResult[beginIndex + i]);
 		}
 	}
-
+	void fileNetworkOutput(ofstream& OutFile)
+	{
+		for (int i = 0; i < layerNum - 1; i++)
+		{
+			allConnections[i]->fileWeightOutput(OutFile);
+			allLayers[i + 1]->fileBiasOutput(OutFile);
+		}
+	}
+	void loadNetworkFromFile(ifstream& inputFile)
+	{
+		for (int i = 0; i < layerNum - 1; i++)
+		{
+			allConnections[i]->loadWeightFromFile(inputFile);
+			allLayers[i + 1]->loadBiasFromFile(inputFile);
+		}
+	}
 };

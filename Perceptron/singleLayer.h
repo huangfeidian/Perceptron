@@ -5,11 +5,15 @@
 #include <random>
 #include <assert.h>
 #include <iostream>
+#include <ctime>
+#include <fstream>
 using std::cout;
 using std::endl;
 using std::vector;
 using std::map;
 using std::list;
+using std::ofstream;
+using std::ifstream;
 #pragma once
 class singleLayer
 {
@@ -18,8 +22,7 @@ public:
 	//current.inputvalue[j]=sum(connection.connectionWeight[i][j]*connection.isConnected[i][j]*pre.outputValue[i]*pre.is_maskerd[i])
 	std::vector<double>  outputValue;
 	//outputValue[i]=current.currentFunc(current.inputValue[i]+current.bias[i])
-	std::vector<double>  isRemained;//if node i is dropouted then isDropouted[i] =1,else 0
-	int remainNumber ;//the number of nodes to dropout
+	
 	std::vector<double>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
 	std::vector<double>  delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
 	std::vector<double>  bias;// for the bias
@@ -29,38 +32,22 @@ public:
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
 	const int dim ;//for the dimension
 
-	singleLayer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), remainNumber(inDim),
-		inputValue(inDim, 0), isRemained(inDim, 1), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
+	singleLayer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), 
+		inputValue(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
 		bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
 	{
-		
+		std::default_random_engine dre(clock());
+		std::uniform_real_distribution<double> di(-1.0, 1.0);
+		for (int i = 0; i < inDim; i++)
+		{
+			bias[i] = di(dre);
+		}
 	
 		//and other initialtion
 	}
-	void dropoutNodes(int numberToRemain)
-	{
-		vector<int> forShuffle(dim);
-		remainNumber = numberToRemain;
-		for (int i = 0; i < dim; i++)
-		{
-			forShuffle[i] = i;
-		}
-		std::default_random_engine dre;
-		std::shuffle(forShuffle.begin(), forShuffle.end(), dre);
-		for (int i = 0; i < dim-numberToRemain; i++)
-		{
-			isRemained[forShuffle[i]] = 0.0;
-		}
-	}
+	
 
-	void dropoutRestore()
-	{
-		for (int i = 0; i < dim; i++)
-		{
-			isRemained[i] = 1.0;
-		}
-		remainNumber = dim;
-	}
+	
 	//void updateInput(const vector<double>& partInput)//for now this function is not used
 	//{
 	//	for (int i = 0; i < dim; i++)
@@ -70,10 +57,9 @@ public:
 	//}
 	virtual void forwardPropagate()
 	{
-		double scale = dim*1.0 / remainNumber;
 		for (int i = 0; i < dim; i++)//we can use sse
 		{
-			outputValue[i] = scale*currentFunc(inputValue[i]+bias[i])*isRemained[i];
+			outputValue[i] = currentFunc(inputValue[i]+bias[i]);
 			inputValue[i] = 0;
 		}
 	}
@@ -85,12 +71,11 @@ public:
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			if (isRemained[i] == 1.0)
-			{
-				delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
-				biasGradient[i] = delta[i];
-				batchBiasGradient[i] += biasGradient[i];
-			}
+
+			delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
+			biasGradient[i] = delta[i];
+			batchBiasGradient[i] += biasGradient[i];
+			outputGradient[i] = 0;
 		
 		}
 	}
@@ -100,7 +85,7 @@ public:
 		{
 			bias[i] -= batchBiasGradient[i]*biasStepsize;
 			batchBiasGradient[i]=0;//clear the batch sum
-			outputGradient[i] = 0;
+			
 			delta[i] = 0;
 		}
 	}
@@ -119,5 +104,30 @@ public:
 			cout << bias[i] << ' ';
 		}
 		cout << endl << "current layer  bias" << endl;
+	}
+	virtual void fileBiasOutput(ofstream& outFile)
+	{
+		for (int i = 0; i < dim; i++)
+		{
+			outFile << bias[i] << ' ';
+		}
+		outFile << endl;
+	}
+	virtual void loadBiasFromFile(ifstream& inputFile)
+	{
+		char temp[100];
+		for (int i = 0; i < dim; i++)
+		{
+			inputFile >> bias[i];
+		}
+		inputFile.getline(temp,99);
+	}
+	virtual void dropoutNodes(int nodesToRemain)
+	{
+		// do nothing
+	}
+	virtual void dropoutRestore()
+	{
+		//do nothing
 	}
 };

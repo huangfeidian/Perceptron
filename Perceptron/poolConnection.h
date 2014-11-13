@@ -1,6 +1,7 @@
 #include "singleConnection.h"
 #include <iostream>
 #include "accelerateFor.h"
+#include "config.h"
 using namespace std;
 class poolConnection :public singleConnection
 {
@@ -11,21 +12,29 @@ public:
 	const int inputDimCol;
 	const int outputDimRow;
 	const int outputDimCol;
-	vector<vector<int>> preLayerWinMaxIndex;
+	double scale;
+	double scaleGradient;
+	double scaleBatchGradient;
 	poolConnection(int inDimRow, int inDimCol, int poolWinSize) :singleConnection(inDimCol*inDimRow, (inDimCol / poolWinSize)*(inDimRow / poolWinSize)), poolWindowCol(poolWinSize),
 		poolWindowRow(poolWinSize)
 		, inputDimCol(inDimCol), inputDimRow(inDimRow), outputDimCol(inDimCol / poolWinSize), outputDimRow(inDimRow / poolWinSize)
-		, preLayerWinMaxIndex(inDimRow / poolWinSize, vector<int>(inDimCol / poolWinSize,0))
 	{
+#ifdef CHECK_LEGITIMATE
 		assert(inDimCol%poolWinSize == 0);
 		assert(inDimRow%poolWinSize == 0);
+#endif
+		default_random_engine dre(clock());
+		uniform_real_distribution<double> ran;
+		scale = ran(dre);
 		for (int i = 0; i < inDimRow; i++)
 		{
 			for (int j = 0; j < inDimCol; j++)
 			{
-				addConnection(i*inDimRow + j, (i / poolWinSize)*outputDimCol+ j / poolWinSize, 0);
+				addConnection(i*inDimRow + j, (i / poolWinSize)*outputDimCol+ j / poolWinSize, scale);
 			}
 		}
+		scaleGradient = 0;
+		scaleBatchGradient = 0;
 	}
 	void  forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
@@ -33,50 +42,58 @@ public:
 		{
 			for (int j = 0; j < outputDimCol; j++)
 			{
-				double tempmax = input[i*poolWindowRow*inputDimCol + j*poolWindowCol];
-				preLayerWinMaxIndex[i][j] = i*poolWindowRow*inputDimCol + j*poolWindowCol;
+				double result = 0;
 				for (int k = 0; k < poolWindowRow; k++)
 				{
 					for (int l = 0; l < poolWindowCol; l++)
 					{
-						double tempValue = input[(i*poolWindowRow + k)*inputDimCol + j*poolWindowCol + l];
-						if (tempValue > tempmax)
-						{
-							tempmax = tempValue;
-							preLayerWinMaxIndex[i][j] = (i*poolWindowRow + k)*inputDimCol + j*poolWindowCol + l;
-						}
+						result += input[(i*poolWindowRow + k)*inputDimCol + (j*poolWindowCol + l)];
 					}
 				}
-				output[i*outputDimCol + j] = tempmax;
+				output[i*outputDimCol + j] = result;
 			}
 		}
+
 	}
 	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
 		//in this implementation the prelayeroutput is not used ,we just dont need it 
 	{
-		for(int i=0; i<inputDimRow;i++)
-		{
-			for (int j = 0; j < inputDimCol; j++)
-			{
-				preLayerGradient[i*inputDimCol + j] = 0;
-			}
-		}
-		for(int i=0; i<outputDimRow; i++)
+		scaleGradient = 0;
+		for (int i = 0; i < outputDimRow; i++)
 		{
 			for (int j = 0; j < outputDimCol; j++)
 			{
-				preLayerGradient[preLayerWinMaxIndex[i][j]] = nextLayerDelta[i*outputDimCol + j];
+				
+				for (int k = 0; k < poolWindowRow; k++)
+				{
+					for (int l = 0; l < poolWindowCol; l++)
+					{
+						preLayerGradient[(i*poolWindowRow + k)*inputDimCol + (j*poolWindowCol + l)] += nextLayerDelta[i*outputDimCol + j] * scale;
+						scaleGradient += preLayerOutput[(i*poolWindowRow + k)*inputDimCol + (j*poolWindowCol + l)]*nextLayerDelta[i*outputDimCol+j];
+					}
+				}
 			}
 		}
-		//we dont record the weight ,because weight is useless in pool connection
+		scaleBatchGradient += scaleGradient;
 	}
 	void updateWeight(double stepSize)
 	{
-		//do nothing because  there are no weights here
+		scaleBatchGradient = scaleBatchGradient / inputDim;
+		scale -= stepSize*scaleBatchGradient;
+		scaleBatchGradient = 0;
 	}
 	void consoleWeightOutput()
 	{
 		
-		cout << "current connection is pool" << endl;
+		cout <<scale<< endl;
+	}
+	void fileWeightOutput(ofstream& outFile)
+	{
+		outFile << scale << endl;
+	}
+	void loadWeightFromFile(ifstream& inputFile)
+	{
+		inputFile >> scale;
+		inputFile.get();
 	}
 };
