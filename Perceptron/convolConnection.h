@@ -16,10 +16,9 @@ public:
 	vector<vector<double>> windowWeight;
 	vector<vector<double>> windowWeightGradient;
 	vector<vector<double>> batchWinWeiGradient;
-	vector<vector<int>> connectionCounter;
 	convolutionConnection(int inRow, int inColumn, int window) :singleConnection(inRow*inColumn, (inColumn - window + 1)*(inRow - window + 1)), windowRow(window)
 		, windowColumn(window), inDimColumn(inColumn), inDimRow(inRow), outDimColumn(inColumn + 1 - window), outDimRow(inRow + 1 - window), windowWeight(window, vector<double>(window, 0))
-		, windowWeightGradient(window, vector<double>(window, 0)), batchWinWeiGradient(window, vector<double>(window, 0)), connectionCounter(window, vector<int>(window,0))
+		, windowWeightGradient(window, vector<double>(window, 0)), batchWinWeiGradient(window, vector<double>(window, 0))
 		//watchout you must ensure inDimRow>=window and inDimColumn>=window
 	{
 		std::default_random_engine dre(clock());
@@ -43,11 +42,17 @@ public:
 					for (int l = 0; l < windowColumn; l++)
 					{
 						addConnection((i + k)*inDimColumn + j + l, i*outDimColumn + j, windowWeight[k][l]);
-						connectionCounter[k][l]++;
+	
 					}
 				}
 			}
 		}
+	}
+	void addConnection(int fromIndex, int toIndex,double currentWeight)
+	{
+		totalConnections++;
+		weightFromInput[fromIndex].push_back(toIndex);
+		weightToOutput[toIndex].push_back(fromIndex);
 	}
 	void forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
@@ -108,7 +113,7 @@ public:
 		{
 			for (int j = 0; j < windowColumn; j++)
 			{
-				windowWeight[i][j] -= stepSize*batchWinWeiGradient[i][j]/connectionCounter[i][j];
+				windowWeight[i][j] -= stepSize*batchWinWeiGradient[i][j];
 				batchWinWeiGradient[i][j] = 0;
 			}
 		}//update the window

@@ -12,7 +12,7 @@ public:
 	std::vector<std::vector<double>> connectWeight;//the weights of connections between layers,currently i don't care the sparse before this demo works
 	const int inputDim;
 	const int outputDim;
-	std::vector<std::vector<int>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
+	std::vector<std::vector<bool>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
 	std::vector<std::vector<double>> weightGradient;//for the Gradient of the weight
 	std::vector<std::vector<double>> batchWeightGradient;//for the batch sum of  Gradient of the weight
 	std::vector<std::vector<int>> weightFromInput;//weightFromInput[i][j]=connectWeight[i][j]
@@ -21,23 +21,23 @@ public:
 	int totalConnections;//sum of  all isConnected[i][j]!=0
 	
 
-	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0), connectWeight(inDim, vector<double>(outDim,0))
-		, isConnected(inDim, vector<int>(outDim, 0)), weightGradient(inDim, vector<double>(outDim, 0)), weightFromInput(inDim, vector<int>()),
-		weightToOutput(outDim, vector< int>()), batchWeightGradient(inDim, vector<double>(outDim, 0))
+	singleConnection(int inDim, int outDim) :inputDim(inDim), outputDim(outDim), totalConnections(0)
+		, weightFromInput(inDim, vector<int>()),
+		weightToOutput(outDim, vector< int>())
 	{
 		
 	}
-	void setConnected(const vector<vector<bool>>& inputIsConnected)
+	virtual void setConnected(const vector<vector<bool>>& inputIsConnected)
 	{
 		for (int i = 0; i < inputDim; i++)
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				isConnected[i][j] = inputIsConnected[i][j] == true ? 1 : 0;
+				isConnected[i][j] = inputIsConnected[i][j] ;
 			}
 		}
 	}
-	void initWeight()
+	virtual void initWeight()
 	{
 		std::default_random_engine dre(clock());
 		std::uniform_real_distribution<double> di(-1.0, 1.0);
@@ -53,6 +53,12 @@ public:
 				}
 			}
 		}
+	}
+	virtual void initResource()
+	{
+		isConnected = vector<vector<bool>>(inputDim, vector<bool>(outputDim, false));
+		weightGradient = vector<vector<double>>(inputDim, vector<double>(outputDim, 0));
+		batchWeightGradient = vector<vector<double>>(inputDim, vector<double>(outputDim, 0));
 	}
 	 virtual void addConnection(int fromIndex, int toIndex, double weight)
 	{
@@ -136,6 +142,7 @@ public:
 	}
 	virtual void loadWeightFromFile(ifstream& inputFile)
 	{
-
+		//do nothing
 	}
+
 };

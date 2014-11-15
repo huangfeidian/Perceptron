@@ -36,7 +36,6 @@ public:
 	}
 	void updateBias(double biasStepsize)
 	{
-		batchConvolBiasGrad = batchConvolBiasGrad / dim;
 		convolBias -= biasStepsize*batchConvolBiasGrad;
 		batchConvolBiasGrad = 0;
 	}

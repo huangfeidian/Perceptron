@@ -34,6 +34,7 @@ int main()
 	ofstream weightOutFile("weight.txt");
 	ofstream biasOutFile("bias.txt");
 	ofstream trainResult("trainResult.txt");
+	ifstream tinycnn("LeNet-weights");
 	end = clock();
 	cout << (end - begin)  << " ms passed in reading the file" << endl;
 	begin = clock();
@@ -47,28 +48,59 @@ int main()
 			{X, X, O, O, O, X, X, O, O, O, O, X, O, O, X, O},
 			{X, X, X, O, O, O, X, X, O, O, O, O, X, O, O, O}
 	};
-	currentNet.addConvolutionLayerAndConnection(32, 5, theFirstConvolutionConnection, ACTIVATEFUNC::SIGMOID);
-	currentNet.addPoolLayerAndConnection(28, 2, ACTIVATEFUNC::SIGMOID);
-	currentNet.addConvolutionLayerAndConnection(14, 5, theSecondConvolutionConnection, ACTIVATEFUNC::SIGMOID);
-	currentNet.addPoolLayerAndConnection(10, 2, ACTIVATEFUNC::SIGMOID);
-	currentNet.addFullLayerAndConnection(120, ACTIVATEFUNC::SIGMOID);
-	currentNet.addFullLayerAndConnection(84, ACTIVATEFUNC::SIGMOID);
-	currentNet.addFullLayerAndConnection(10, ACTIVATEFUNC::SIGMOID);
+	currentNet.addConvolutionLayerAndConnection(32, 5, theFirstConvolutionConnection, ACTIVATEFUNC::TANH);
+	currentNet.addPoolLayerAndConnection(28, 2, ACTIVATEFUNC::TANH);
+	currentNet.addConvolutionLayerAndConnection(14, 5, theSecondConvolutionConnection, ACTIVATEFUNC::TANH);
+	currentNet.addPoolLayerAndConnection(10, 2, ACTIVATEFUNC::TANH);
+	currentNet.addFullLayerAndConnection(120, ACTIVATEFUNC::TANH);
+	currentNet.addFullLayerAndConnection(80, ACTIVATEFUNC::TANH);
+	currentNet.addFullLayerAndConnection(10, ACTIVATEFUNC::TANH);
 	int trainCaseNumber=trainLabels.size();
 	int testCaseNumber = testLabels.size();
 	end = clock();
 	cout << (end - begin) << " ms passed in construct the network" << endl;
 	begin = clock();
-	double totalPrecision = 0;
-	int rightResults = 0;
-	double step = 0.1;
-	bool nantest = false;
-	for (int i = 0; i < 10; i++)
+	//load the bias and weight from tiny cnn
+	currentNet.allConnections[0]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[1]->loadBiasFromFile(tinycnn);
+	currentNet.allConnections[1]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[2]->loadBiasFromFile(tinycnn);
+	currentNet.allConnections[2]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[3]->loadBiasFromFile(tinycnn);
+	currentNet.allConnections[3]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[4]->loadBiasFromFile(tinycnn);
+	for (int i = 0; i < 16; i++)
 	{
-		trainResult << std::setw(13) << trainLabels[1][i]<< ' ';
+		for (int j = 0; j <120; j++)
+		{
+
+			char temp[100];
+			tinycnn.getline(temp, 99);
+			for (int k = 0; k < 5; k++)
+			{
+				for (int l = 0; l < 5; l++)
+				{
+					tinycnn >> currentNet.allConnections[4]->feaMapConnect[i]->connectWeight[5 * k+ l][j];
+				}
+				tinycnn.getline(temp, 98);
+			}
+
+		}
 	}
-	trainResult << endl;
-	for (int k = 0; k < 1; k++)
+	currentNet.allLayers[5]->loadBiasFromFile(tinycnn);
+	currentNet.allConnections[5]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[6]->loadBiasFromFile(tinycnn);
+	currentNet.allConnections[6]->loadWeightFromFile(tinycnn);
+	currentNet.allLayers[7]->loadBiasFromFile(tinycnn);
+	//load end
+	int rightResults = 0;
+	double step = 0.015;
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	trainResult << std::setw(13) << trainLabels[1][i]<< ' ';
+	//}
+	//trainResult << endl;
+	for (int k = 0; k <5; k++)
 	{
 	
 		step = step*0.9;
@@ -77,11 +109,25 @@ int main()
 		{
 			currentNet.singleCaseOutput(trainImages[i]);
 			currentNet.singleCaseBackProp(trainLabels[i]);
-			if (i % 8 == 0)
+			if (i % 10 == 9)
 			{
 				currentNet.updateNetwork(step, step);
 			}	
 		}
+		for (int i = 0; i < testCaseNumber; i++)
+		{
+			currentNet.singleCaseOutput(testImages[i]);
+			/*for (int j = 0; j <10; j++)
+			{
+				trainResult << std::setw(13) << currentNet.output[j] << ' ';
+			}*/
+			//trainResult << endl;
+			if (testLabels[i][maxOut(currentNet.output)] > 0.5)
+			{
+				rightResults++;
+			}
+		}
+		cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
 	}
 	//int i = 0;
 	//for (int j = 0; j < currentNet.outputDim; j++)
@@ -103,23 +149,35 @@ int main()
 	//}
 	//cout << "after " << i << "rounds" << endl;
 	//currentNet.fileNetworkOutput(weightOutFile);
-
-
-	//for (int i = 0; i < testCaseNumber; i++)
+	rightResults = 0;
+	for (int i = 0; i < testCaseNumber; i++)
+	{
+		currentNet.singleCaseOutput(testImages[i]);
+		for (int j = 0; j <10; j++)
+		{
+			trainResult <<std::setw(13)<<currentNet.output[j] << ' ';
+		}
+		trainResult << endl;
+		if (testLabels[i][maxOut(currentNet.output)] > 0.5)
+		{
+			rightResults++;
+		}
+	}
+	//currentNet.singleCaseOutput(testImages[0]);
+	//ofstream testcaseone("testcase1.txt");
+	//auto& tempMap = currentNet.allLayers[1]->featureMaps;
+	//for (int j = 0; j < 28; j++)
 	//{
-	//	currentNet.singleCaseOutput(testImages[i]);
-	//	for (int j = 0; j <10; j++)
+	//	for (int i = 0; i < 28; i++)
 	//	{
-	//		trainResult <<std::setw(13)<<currentNet.output[j] << ' ';
+	//		testcaseone << setw(13) << tempMap[0]->outputValue[28*i+j] << ' ';
 	//	}
-	//	trainResult << endl;
-	//	if (testLabels[i][maxOut(currentNet.output)] > 0.5)
-	//	{
-	//		rightResults++;
-	//	}
+	//	testcaseone << endl;
 	//}
-	//cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
+	//
+	//testcaseone.close();
+	cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
 	end = clock();
 	cout << (end - begin) << " ms passed in training" << endl;
-
+	currentNet.fileNetworkOutput(weightOutFile);
 }

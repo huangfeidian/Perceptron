@@ -128,7 +128,7 @@ public:
 	void  singleCaseOutput(const vector<double>& inputCase)
 	{
 		allLayers[0]->featureMaps[0]->outputValue=inputCase;
-		for (int i = 0; i < layerNum-1 ; i++)//do something to eliminate the vector copy next time
+		for (int i = 0; i < layerNum-1 ; i++)
 		{
 			allConnections[i]->forwardPropagate(allLayers[i], allLayers[i+1]);
 			allLayers[i + 1]->forwardPropagate();
@@ -151,7 +151,6 @@ public:
 		{
 			allLayers[i]->backPropagate();
 			allConnections[i - 1]->backPropagate(allLayers[i], allLayers[i - 1]);
-			allLayers[i]->resetOutputGradient();
 		}
 	}
 	void updateNetwork(double biasStepSize,double weightStepSize)

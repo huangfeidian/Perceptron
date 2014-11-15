@@ -26,15 +26,24 @@ public:
 		default_random_engine dre(clock());
 		uniform_real_distribution<double> ran;
 		scale = ran(dre);
-		for (int i = 0; i < inDimRow; i++)
-		{
-			for (int j = 0; j < inDimCol; j++)
-			{
-				addConnection(i*inDimRow + j, (i / poolWinSize)*outputDimCol+ j / poolWinSize, scale);
-			}
-		}
+		//for (int i = 0; i < inDimRow; i++)
+		//{
+		//	for (int j = 0; j < inDimCol; j++)
+		//	{
+		//		addConnection(i*inDimRow + j, (i / poolWinSize)*outputDimCol+ j / poolWinSize, scale);
+		//	}
+		//}
 		scaleGradient = 0;
 		scaleBatchGradient = 0;
+	}
+	virtual void addConnection(int fromIndex, int toIndex, double weight)
+	{
+		// just do nothing
+		//totalConnections++;
+		//connectWeight[fromIndex][toIndex] = weight;
+		//isConnected[fromIndex][toIndex] = 1;
+		//weightFromInput[fromIndex].push_back(toIndex);
+		//weightToOutput[toIndex].push_back(fromIndex);
 	}
 	void  forwardPropagate(const vector<double>& input, vector<double>& output)
 	{
@@ -50,7 +59,7 @@ public:
 						result += input[(i*poolWindowRow + k)*inputDimCol + (j*poolWindowCol + l)];
 					}
 				}
-				output[i*outputDimCol + j] = result;
+				output[i*outputDimCol + j] = result*scale;
 			}
 		}
 
@@ -78,13 +87,11 @@ public:
 	}
 	void updateWeight(double stepSize)
 	{
-		scaleBatchGradient = scaleBatchGradient / inputDim;
 		scale -= stepSize*scaleBatchGradient;
 		scaleBatchGradient = 0;
 	}
 	void consoleWeightOutput()
 	{
-		
 		cout <<scale<< endl;
 	}
 	void fileWeightOutput(ofstream& outFile)
@@ -94,6 +101,7 @@ public:
 	void loadWeightFromFile(ifstream& inputFile)
 	{
 		inputFile >> scale;
+		scale = scale / 4;
 		inputFile.get();
 	}
 };

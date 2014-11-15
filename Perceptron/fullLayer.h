@@ -54,4 +54,8 @@ public:
 
 		}
 	}
+	void resetOutputAndGradient()
+	{
+
+	}
 };

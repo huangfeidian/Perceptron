@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
+#include <iomanip>
 using std::cout;
 using std::endl;
 using std::vector;
@@ -62,10 +63,6 @@ public:
 			outputValue[i] = currentFunc(inputValue[i]+bias[i]);
 			inputValue[i] = 0;
 		}
-	}
-	virtual void resetOutputGradient()
-	{
-		outputGradient = vector<double>(dim, 0);//clear the outputGradient
 	}
 	virtual void backPropagate()
 	{
@@ -129,5 +126,15 @@ public:
 	virtual void dropoutRestore()
 	{
 		//do nothing
+	}
+	void fileResultOutput()
+	{
+		ofstream outputFile("singleCase.txt", std::ios::app);
+		for (int i = 0; i < dim; i++)
+		{
+			outputFile << std::setw(13) << outputValue[i] << ' ';
+		}
+		outputFile << endl;
+		outputFile.close();
 	}
 };

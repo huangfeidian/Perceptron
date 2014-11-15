@@ -1,7 +1,0 @@
-#include "network.h"
-#include "fullConnection.h"
-#include "convolConnection.h"
-#include "inputs.h"
-#include "poolLayer.h"
-#include "poolConnection.h"
-#include "mnistParser.h"

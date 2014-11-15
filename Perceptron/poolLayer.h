@@ -37,7 +37,6 @@ public:
 	}
 	void updateBias(double biasStepsize)
 	{
-		batchPoolBiasGrad = batchPoolBiasGrad / dim;
 		poolBias -= biasStepsize*batchPoolBiasGrad;
 		batchPoolBiasGrad = 0;
 	}

@@ -6,6 +6,9 @@ public:
 	vector<vector<double>> reverseWeight;//reverseWeight[i][j]=connectweight[j][i]
 	fullConnection(int inDim, int outDim) :singleConnection(inDim, outDim), reverseWeight(outDim, vector<double>(inDim,0))
 	{
+		connectWeight = vector<vector<double>>(inDim, vector<double>(outDim, 0));
+		weightGradient = vector<vector<double>>(inDim, vector<double>(outDim, 0));
+		batchWeightGradient = vector<vector<double>>(inDim, vector<double>(outDim, 0));
 		initWeight();
 	}
 	void addConnection(int fromIndex, int toIndex, double weight)
@@ -13,9 +16,6 @@ public:
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;
 		reverseWeight[toIndex][fromIndex] = weight;
-		isConnected[fromIndex][toIndex] = 1;
-		weightFromInput[fromIndex].push_back(toIndex);
-		weightToOutput[toIndex].push_back(fromIndex);
 	}
 	void initWeight()
 	{
@@ -62,7 +62,8 @@ public:
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				connectWeight[i][j] -= stepSize*weightGradient[i][j];
+				connectWeight[i][j] -= stepSize*batchWeightGradient[i][j];
+				reverseWeight[j][i] = connectWeight[i][j];
 				batchWeightGradient[i][j] = 0;//clear the batchsum
 			}
 		}

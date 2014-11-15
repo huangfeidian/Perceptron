@@ -17,19 +17,17 @@ public:
 #endif 
 		featureMaps.push_back(inputLayer);
 	}
-	void resetOutputGradient()
-	{
-		accelerateFor(0, featureMapNumber, [&](int i)
-		{
-			featureMaps[i]->resetOutputGradient();//clear the outputGradient
-		});
-	}
+
 	void forwardPropagate()
 	{
 		accelerateFor (0,featureMapNumber,[&](int i)
 		{
 			featureMaps[i]->forwardPropagate();
 		});
+
+#ifdef FILE_DEBUG
+		fileResultOutput();
+#endif
 	}
 	void backPropagate()
 	{
@@ -77,5 +75,16 @@ public:
 		{
 			featureMaps[i]->loadBiasFromFile(inputFile);
 		}
+	}
+	void fileResultOutput()
+	{
+		ofstream outFile("singleCase.txt", ios::app);
+		outFile << " multimap result output" << endl;
+		outFile.close();
+		for (int i = 0; i < featureMapNumber; i++)
+		{
+			featureMaps[i]->fileResultOutput();
+		}
+		
 	}
 };
