@@ -6,3 +6,4 @@
 
 #define USE_AVX
 //#define FILE_DEBUG
+#define BATCH_SIZE 8

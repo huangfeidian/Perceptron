@@ -31,14 +31,17 @@ public:
 	}
 	void forwardPropagate(const multiLayer* preLayers, const multiLayer* afterLayers)
 	{
-		accelerateFor (  0, afterFeaMapNumber,[&](int i)
+
+		accelerateFor(0, afterFeaMapNumber, [&](int i)
 		{
 			for (auto currentConnect : afterFromPre[i])
 			{
-				feaMapConnect[currentConnect.second]->forwardPropagate(preLayers->featureMaps[currentConnect.first]->outputValue, 
+				feaMapConnect[currentConnect.second]->forwardPropagate(preLayers->featureMaps[currentConnect.first]->outputValue,
 					afterLayers->featureMaps[i]->inputValue);
 			}
 		});
+
+		
 	}
 	void backPropagate(const multiLayer* afterLayers, multiLayer* preLayers)
 	{

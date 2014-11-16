@@ -14,7 +14,6 @@ public:
 	const int outputDim;
 	std::vector<std::vector<bool>> isConnected;//if node i in prev layer and node j in next layer is connected then isConnected[i][j]=1,else isConnected[i][j]=0
 	std::vector<std::vector<double>> weightGradient;//for the Gradient of the weight
-	std::vector<std::vector<double>> batchWeightGradient;//for the batch sum of  Gradient of the weight
 	std::vector<std::vector<int>> weightFromInput;//weightFromInput[i][j]=connectWeight[i][j]
 	std::vector<std::vector<int>> weightToOutput;//weightToOutput[i][j]=connecWeight[j][i]
 
@@ -56,11 +55,11 @@ public:
 	}
 	virtual void initResource()
 	{
+		connectWeight = vector<vector<double>>(inputDim, vector<double>(outputDim, 0));
 		isConnected = vector<vector<bool>>(inputDim, vector<bool>(outputDim, false));
 		weightGradient = vector<vector<double>>(inputDim, vector<double>(outputDim, 0));
-		batchWeightGradient = vector<vector<double>>(inputDim, vector<double>(outputDim, 0));
 	}
-	 virtual void addConnection(int fromIndex, int toIndex, double weight)
+	virtual void addConnection(int fromIndex, int toIndex, double weight)
 	{
 		totalConnections++;
 		connectWeight[fromIndex][toIndex] = weight;
@@ -68,29 +67,37 @@ public:
 		weightFromInput[fromIndex].push_back(toIndex);
 		weightToOutput[toIndex].push_back(fromIndex);
 	}
-	virtual void forwardPropagate(const vector<double>& input, vector<double>& output)
+	virtual void forwardPropagate(const vector<vector<double>>& input, vector<vector<double>>& output)
 	{
 		for (int i= 0; i<outputDim;i++)//we can use multithread or multithread
 		{
-			double propagateResult = 0;
-			for (auto singleConnection : weightToOutput[i])//we can use sse or avx
+			for (int j = 0; j < BATCH_SIZE; j++)
 			{
-				propagateResult += input[singleConnection] * connectWeight[singleConnection][i];
+				double propagateResult = 0;
+				for (auto singleConnection : weightToOutput[i])//we can use sse or avx
+				{
+					propagateResult += input[j][singleConnection] * connectWeight[singleConnection][i];
+				}
+				output[j][i] += propagateResult;
 			}
-			output[i] += propagateResult;
+			
 		}
 	}
-	virtual void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
+	virtual void backPropagate(const vector<vector<double>>& nextLayerDelta, vector<vector<double>>& preLayerGradient, const vector<vector<double>>& preLayerOutput)
 	{
 		//we can gain more parallel
 		for (int i = 0; i < inputDim; i++)//for the layer nodes
 		{
-			double propagateResult = 0;
+			double propagateResult[BATCH_SIZE] = { 0 };
 			for (auto singleConnection : weightFromInput[i])
 			{
-				propagateResult += nextLayerDelta[singleConnection] * connectWeight[i][singleConnection];
+				for (int j = 0; j < BATCH_SIZE; j++)
+				{
+					propagateResult[j] = nextLayerDelta[j][singleConnection] * connectWeight[i][singleConnection];
+					preLayerGradient[j][i] += propagateResult[j];
+				}
 			}
-			preLayerGradient[i] += propagateResult;
+			
 		}
 		
 		//begin update the weight
@@ -98,9 +105,13 @@ public:
 		{
 			for (auto singleConnection : weightToOutput[i])
 			{
-				double temp = nextLayerDelta[i] * preLayerOutput[singleConnection];
+				double temp = 0;
+				for (int j = 0; j < BATCH_SIZE; j++)
+				{
+					temp += nextLayerDelta[j][i] * preLayerOutput[j][singleConnection];
+
+				}
 				weightGradient[singleConnection][i] =temp ;
-				batchWeightGradient[singleConnection][i] += temp;
 			}
 		}
 	}
@@ -111,8 +122,8 @@ public:
 		{
 			for(auto in:weightFromInput[i])
 			{
-				connectWeight[i][in] -=stepSize*batchWeightGradient[i][in];
-				batchWeightGradient[i][in] = 0;//clear the batch sum
+				connectWeight[i][in] -=stepSize*weightGradient[i][in];
+				weightGradient[i][in] = 0;//clear the batch sum
 			};
 		}
 	}

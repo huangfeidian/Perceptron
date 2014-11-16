@@ -105,64 +105,48 @@ int main()
 	
 		step = step*0.9;
 		rightResults = 0;
-		for (int i = 0; i < trainCaseNumber; i++)
+		for (int i = 0; i < trainCaseNumber/BATCH_SIZE; i++)
 		{
-			currentNet.singleCaseOutput(trainImages[i]);
-			currentNet.singleCaseBackProp(trainLabels[i]);
-			if (i % 10 == 9)
-			{
-				currentNet.updateNetwork(step, step);
-			}	
+			currentNet.singleCaseOutput(trainImages, BATCH_SIZE*i);
+			currentNet.singleCaseBackProp(trainLabels, BATCH_SIZE*i);
+			currentNet.updateNetwork(step, step);
 		}
-		for (int i = 0; i < testCaseNumber; i++)
+		for (int i = 0; i < testCaseNumber / BATCH_SIZE; i++)
 		{
-			currentNet.singleCaseOutput(testImages[i]);
+			currentNet.singleCaseOutput(testImages, BATCH_SIZE*i);
 			/*for (int j = 0; j <10; j++)
 			{
 				trainResult << std::setw(13) << currentNet.output[j] << ' ';
 			}*/
 			//trainResult << endl;
-			if (testLabels[i][maxOut(currentNet.output)] > 0.5)
+			for (int j = 0; j < BATCH_SIZE; j++)
 			{
-				rightResults++;
+				if (testLabels[BATCH_SIZE*i + j][maxOut(currentNet.output[j])] > 0.5)
+				{
+					rightResults++;
+				}
 			}
+			
 		}
 		cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
 	}
-	//int i = 0;
-	//for (int j = 0; j < currentNet.outputDim; j++)
-	//{
-	//	trainResult << setw(13) << trainLabels[0][j] << ' ';
-	//}
-	//trainResult << endl;
-	//while (i<1000)
-	//{
-	//	for (int j = 0; j < currentNet.outputDim; j++)
-	//	{
-	//		trainResult << setw(13)<<currentNet.output[j] << ' ';
-	//	}
-	//	trainResult << endl;
-	//	currentNet.singleCaseBackProp(trainLabels[0]);
-	//	currentNet.updateNetwork(step,step);
-	//	i++;
-	//	currentNet.singleCaseOutput(trainImages[0]);
-	//}
+	
 	//cout << "after " << i << "rounds" << endl;
 	//currentNet.fileNetworkOutput(weightOutFile);
-	rightResults = 0;
-	for (int i = 0; i < testCaseNumber; i++)
-	{
-		currentNet.singleCaseOutput(testImages[i]);
-		for (int j = 0; j <10; j++)
-		{
-			trainResult <<std::setw(13)<<currentNet.output[j] << ' ';
-		}
-		trainResult << endl;
-		if (testLabels[i][maxOut(currentNet.output)] > 0.5)
-		{
-			rightResults++;
-		}
-	}
+
+	//for (int i = 0; i < testCaseNumber; i++)
+	//{
+	//	currentNet.singleCaseOutput(testImages[i]);
+	//	for (int j = 0; j <10; j++)
+	//	{
+	//		trainResult <<std::setw(13)<<currentNet.output[j] << ' ';
+	//	}
+	//	trainResult << endl;
+	//	if (testLabels[i][maxOut(currentNet.output)] > 0.5)
+	//	{
+	//		rightResults++;
+	//	}
+	//}
 	//currentNet.singleCaseOutput(testImages[0]);
 	//ofstream testcaseone("testcase1.txt");
 	//auto& tempMap = currentNet.allLayers[1]->featureMaps;

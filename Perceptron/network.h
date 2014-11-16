@@ -14,11 +14,12 @@ public:
 	const int inputDim;
 	int outputDim;
 	lossFunc currentLoss;
-	vector<double> output;
+	vector<vector<double>> output;
 public:
 	std::vector<multiLayer*>allLayers;
 	std::vector<multiConnection*> allConnections;
-	network(int inputDim, int finalOutDim ,LOSSFUNC currentLossFunctype) :inputDim(inputDim), outputDim(inputDim), layerNum(1), currentLoss(currentLossFunctype), output(finalOutDim,0)
+	network(int inputDim, int finalOutDim ,LOSSFUNC currentLossFunctype) :inputDim(inputDim), outputDim(inputDim), layerNum(1), currentLoss(currentLossFunctype)
+		, output(BATCH_SIZE,vector<double>(finalOutDim,0))
 	{
 		singleLayer* inputLayer=new singleLayer(inputDim, ACTIVATEFUNC::IDENTITY);
 		multiLayer* firstMultiLayer = new multiLayer(1, inputDim);
@@ -125,28 +126,33 @@ public:
 			allLayers[layerIndex]->featureMaps[i]->dropoutRestore();
 		}
 	}
-	void  singleCaseOutput(const vector<double>& inputCase)
+	void  singleCaseOutput(const vector<vector<double>>& inputCase,int beginIndex)//beware you should ensure beginIndex+BATCH_SIZE<= inputCase.size()
 	{
-		allLayers[0]->featureMaps[0]->outputValue=inputCase;
+		for (int i = 0; i < BATCH_SIZE; i++)
+		{
+			allLayers[0]->featureMaps[0]->outputValue[i] = inputCase[beginIndex+i];
+
+		}
 		for (int i = 0; i < layerNum-1 ; i++)
 		{
 			allConnections[i]->forwardPropagate(allLayers[i], allLayers[i+1]);
 			allLayers[i + 1]->forwardPropagate();
 		}
-		for (int i = 0; i < outputDim; i++)
+		for (int i = 0; i < BATCH_SIZE; i++)
 		{
 			output[i] = allLayers[layerNum - 1]->featureMaps[0]->outputValue[i];
 		}
 		
 	}
-	vector<double> setBackGradient(const vector<double>& realResult)
+
+	void singleCaseBackProp(const vector<vector<double>>& realResult,int beginIndex)//beware you should ensure beginIndex+BATCH_SIZE<= realResult.size()
 	{
-		return currentLoss.diff(output, realResult);
-	}
-	void singleCaseBackProp(const vector<double>& realResult)
-	{
-		auto initGradient = currentLoss.diff(output, realResult);
-		allLayers[layerNum-1 ]->featureMaps[0]->outputGradient.swap(initGradient);
+		for (int i = 0; i < BATCH_SIZE; i++)
+		{
+			auto initGradient = currentLoss.diff(output[i], realResult[beginIndex+i]);
+			allLayers[layerNum - 1]->featureMaps[0]->outputGradient[i].swap(initGradient);
+		}
+		
 		for (int i = layerNum-1 ; i > 0; i--)
 		{
 			allLayers[i]->backPropagate();
@@ -161,16 +167,7 @@ public:
 			allConnections[index]->updateWeight(weightStepSize,allLayers[index]);
 		}
 	}
-	void trainbatch(const vector<vector<double>>& batchInput,const vector<vector<double>>& batchResult, int beginIndex,int batchSize)
-	{
-		int totalSize = batchInput.size();
-		int currentBatch = (totalSize - beginIndex) > batchSize ? batchSize : (totalSize - beginIndex);
-		for (int i = 0; i < currentBatch; i++)
-		{
-			singleCaseOutput(batchInput[beginIndex + i]);
-			singleCaseBackProp(batchResult[beginIndex + i]);
-		}
-	}
+	
 	void fileNetworkOutput(ofstream& OutFile)
 	{
 		for (int i = 0; i < layerNum - 1; i++)

@@ -8,7 +8,6 @@ public:
 	{
 		connectWeight = vector<vector<double>>(inDim, vector<double>(outDim, 0));
 		weightGradient = vector<vector<double>>(inDim, vector<double>(outDim, 0));
-		batchWeightGradient = vector<vector<double>>(inDim, vector<double>(outDim, 0));
 		initWeight();
 	}
 	void addConnection(int fromIndex, int toIndex, double weight)
@@ -32,29 +31,42 @@ public:
 			}
 		}
 	}
-	void forwardPropagate(const vector<double>& input, vector<double>& output)
+	void forwardPropagate(const vector<vector<double>>& input, vector<vector<double>>& output)
 	{
-		accelerateFor(0, outputDim,[&](int i)
+		accelerateFor(0, BATCH_SIZE, [&](int i)
 		{
-			double propagateResult = 0;
-			propagateResult = avx_product(input, reverseWeight[i]);
-			output[i] += propagateResult;
-		});
-	}
-	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient,const vector<double>& preLayerOutput)
-	{
-		accelerateFor(0, inputDim, [&](int i)
-		{
-			double propagateResult = 0;
-			propagateResult = avx_product(nextLayerDelta, connectWeight[i]);//using avx
-			preLayerGradient[i] += propagateResult;
 			for (int j = 0; j < outputDim; j++)
 			{
-				weightGradient[i][j] = preLayerOutput[i] * nextLayerDelta[j];
-				batchWeightGradient[i][j] += weightGradient[i][j];
+				double propagateResult = 0;
+				propagateResult = avx_product(input[i], reverseWeight[j]);
+				output[i][j] += propagateResult;
 			}
+			
+		});
+	}
+	void backPropagate(const vector<vector<double>>& nextLayerDelta, vector<vector<double>>& preLayerGradient,const vector<vector<double>>& preLayerOutput)
+	{
+		accelerateFor(0, BATCH_SIZE, [&](int i)
+		{
+			for (int j = 0; j <inputDim ; j++)
+			{
+				double propagateResult = 0;
+				propagateResult = avx_product(nextLayerDelta[i], connectWeight[j]);//using avx
+				preLayerGradient[i][j] += propagateResult;
+			}
+			
 		});
 		//the weightGradient
+		accelerateFor(0, inputDim, [&](int i)
+		{
+			for (int j= 0; j < outputDim; j++)
+			{
+				for (int k = 0; k < BATCH_SIZE; k++)
+				{
+					weightGradient[i][j] += preLayerOutput[k][i] * nextLayerDelta[k][j];
+				}
+			}
+		});
 	}
 	void updateWeight(double stepSize)
 	{
@@ -62,9 +74,9 @@ public:
 		{
 			for (int j = 0; j < outputDim; j++)
 			{
-				connectWeight[i][j] -= stepSize*batchWeightGradient[i][j];
+				connectWeight[i][j] -= stepSize*weightGradient[i][j];
 				reverseWeight[j][i] = connectWeight[i][j];
-				batchWeightGradient[i][j] = 0;//clear the batchsum
+				weightGradient[i][j] = 0;//clear the batchsum
 			}
 		}
 	}

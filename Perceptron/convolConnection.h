@@ -15,10 +15,9 @@ public:
 	const int windowColumn;
 	vector<vector<double>> windowWeight;
 	vector<vector<double>> windowWeightGradient;
-	vector<vector<double>> batchWinWeiGradient;
 	convolutionConnection(int inRow, int inColumn, int window) :singleConnection(inRow*inColumn, (inColumn - window + 1)*(inRow - window + 1)), windowRow(window)
 		, windowColumn(window), inDimColumn(inColumn), inDimRow(inRow), outDimColumn(inColumn + 1 - window), outDimRow(inRow + 1 - window), windowWeight(window, vector<double>(window, 0))
-		, windowWeightGradient(window, vector<double>(window, 0)), batchWinWeiGradient(window, vector<double>(window, 0))
+		, windowWeightGradient(window, vector<double>(window, 0))
 		//watchout you must ensure inDimRow>=window and inDimColumn>=window
 	{
 		std::default_random_engine dre(clock());
@@ -27,7 +26,6 @@ public:
 		for (int i = 0; i < window; i++)
 		{
 			windowWeightGradient[i] = tempVec;
-			batchWinWeiGradient[i] = tempVec;
 			for (int j = 0; j < window; j++)
 			{
 				windowWeight[i][j] = di(dre);
@@ -54,23 +52,27 @@ public:
 		weightFromInput[fromIndex].push_back(toIndex);
 		weightToOutput[toIndex].push_back(fromIndex);
 	}
-	void forwardPropagate(const vector<double>& input, vector<double>& output)
+	void forwardPropagate(const vector<vector<double>>& input, vector<vector<double>>& output)
 	{
-		accelerateFor( 0, outDimRow,[&](int i)
+		accelerateFor (0, BATCH_SIZE,[&](int t)
 		{
-			for (int j = 0; j <outDimColumn; j++)
+			for (int i = 0; i < outDimRow; i++)
 			{
-				for (int k = 0; k < windowRow; k++)
+				for (int j = 0; j <outDimColumn; j++)
 				{
-					for (int l = 0; l < windowColumn; l++)
+					for (int k = 0; k < windowRow; k++)
 					{
-						output[i*outDimColumn + j] += input[(i + k)*inDimColumn + j + l] * windowWeight[k][l];
+						for (int l = 0; l < windowColumn; l++)
+						{
+							output[t][i*outDimColumn + j] += input[t][(i + k)*inDimColumn + j + l] * windowWeight[k][l];
+						}
 					}
 				}
 			}
 		});
+		
 	}
-	void backPropagate(const vector<double>& nextLayerDelta, vector<double>& preLayerGradient, const vector<double>& preLayerOutput)
+	void backPropagate(const vector<vector<double>>& nextLayerDelta, vector<vector<double>>& preLayerGradient, const vector<vector<double>>& preLayerOutput)
 	{
 		accelerateFor ( 0,  windowRow,[&](int i)
 		{
@@ -81,11 +83,13 @@ public:
 				{
 					for (int l = 0; l < outDimColumn; l++)
 					{
-						windowWeightGradient[i][j] += nextLayerDelta[k*outDimColumn + l] * preLayerOutput[(k + i)*inDimColumn + j + l];
+						for (int t = 0; t < BATCH_SIZE; t++)
+						{
+							windowWeightGradient[i][j] += nextLayerDelta[t][k*outDimColumn + l] * preLayerOutput[t][(k + i)*inDimColumn + j + l];
+
+						}
 					}
 				}
-				batchWinWeiGradient[i][j] += windowWeightGradient[i][j];
-				
 			}
 		});
 		
@@ -102,9 +106,14 @@ public:
 			{
 				nextLayerColIndex = singleConnection%outDimColumn;
 				nextLayerRowIndex = singleConnection / outDimColumn;
-				propagateResult += nextLayerDelta[singleConnection] * windowWeight[preLayerRowIndex-nextLayerRowIndex][preLayerColIndex-nextLayerColIndex];
+				double tempWeight = windowWeight[preLayerRowIndex - nextLayerRowIndex][preLayerColIndex - nextLayerColIndex];
+				for (int j = 0; j < BATCH_SIZE; j++)
+				{
+					preLayerGradient[j][i] += nextLayerDelta[j][singleConnection] *tempWeight ;
+				
+				}
 			}
-			preLayerGradient[i]+= propagateResult;
+			
 		});
 	}
 	void updateWeight(double stepSize)
@@ -113,24 +122,10 @@ public:
 		{
 			for (int j = 0; j < windowColumn; j++)
 			{
-				windowWeight[i][j] -= stepSize*batchWinWeiGradient[i][j];
-				batchWinWeiGradient[i][j] = 0;
+				windowWeight[i][j] -= stepSize*windowWeightGradient[i][j];
+				windowWeightGradient[i][j] = 0;
 			}
-		}//update the window
-		//then forward the update to the weight matrix
-		//for (int i = 0; i <outDimRow; i++)
-		//{
-		//	for (int j = 0; j <outDimColumn; j++)
-		//	{
-		//		for (int k = 0; k < windowRow; k++)
-		//		{
-		//			for (int l = 0; l < windowColumn; l++)
-		//			{
-		//				connectWeight[(i + k)*inDimColumn + j + l][i*outDimColumn + j]= windowWeight[k][l];
-		//			}
-		//		}
-		//	}
-		//}
+		}
 	}
 	void consoleWeightOutput()
 	{

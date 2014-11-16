@@ -6,21 +6,23 @@ public:
 	const int dimRow;
 	double convolBias;
 	double convolBiasGradient;
-	double batchConvolBiasGrad;
 	convolLayer(int inDimRow, int inDimCol, ACTIVATEFUNC currentActiFun) :singleLayer(inDimCol*inDimRow, currentActiFun), dimCol(inDimCol), dimRow(inDimRow)
 	{
 		default_random_engine dre(clock());
 		uniform_real_distribution<double> ran(-1.0, 1.0);
 		convolBias = ran(dre);
 		convolBiasGradient = 0;
-		batchConvolBiasGrad = 0;
 	}
 	void forwardPropagate()
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			outputValue[i] = currentFunc(inputValue[i] + convolBias);
-			inputValue[i] = 0;
+			for (int j = 0; j < BATCH_SIZE; j++)
+			{
+				outputValue[j][i] = currentFunc(inputValue[j][i] + convolBias);
+				inputValue[j][i] = 0;
+			}
+			
 		}
 	}
 	void backPropagate()
@@ -28,16 +30,19 @@ public:
 		convolBiasGradient = 0;
 		for (int i = 0; i < dim; i++)
 		{
-			delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
-			convolBiasGradient += delta[i];
-			outputGradient[i] = 0;
+			for (int j = 0; j < BATCH_SIZE; j++)
+			{
+				delta[j][i] = outputGradient[j][i] * currentFunc.diff(outputValue[j][i]);
+				convolBiasGradient += delta[j][i];
+				outputGradient[j][i] = 0;
+			}
+			
 		}
-		batchConvolBiasGrad += convolBiasGradient;
 	}
 	void updateBias(double biasStepsize)
 	{
-		convolBias -= biasStepsize*batchConvolBiasGrad;
-		batchConvolBiasGrad = 0;
+		convolBias -= biasStepsize*convolBiasGradient;
+		convolBiasGradient = 0;
 	}
 	void consoleBiasOutput()
 	{

@@ -34,10 +34,14 @@ public:
 	virtual void forwardPropagate()
 	{
 		double scale = dim*1.0 / remainNumber;
-		for (int i = 0; i < dim; i++)//we can use sse
+		for (int i = 0; i < BATCH_SIZE; i++)//we can use sse
 		{
-			outputValue[i] = scale*currentFunc(inputValue[i] + bias[i])*isRemained[i];
-			inputValue[i] = 0;
+			for (int j = 0; j < dim; j++)
+			{
+				outputValue[i][j] = scale*currentFunc(inputValue[i][j] + bias[j])*isRemained[j];
+				inputValue[i][j] = 0;
+			}
+
 		}
 	}
 	virtual void backPropagate()
@@ -46,16 +50,19 @@ public:
 		{
 			if (isRemained[i] == 1.0)
 			{
-				delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
-				biasGradient[i] = delta[i];
-				batchBiasGradient[i] += biasGradient[i];
+				for (int j = 0; j < BATCH_SIZE; j++)
+				{
+					delta[j][i] = outputGradient[j][i] * currentFunc.diff(outputValue[j][i]);
+					biasGradient[i] += delta[j][i];
+				}
+				
 			}
-			outputGradient[i] = 0;
+			for (int j = 0; j < BATCH_SIZE; j++)
+			{
+				outputGradient[j][i] = 0;
+			}
 
 		}
 	}
-	void resetOutputAndGradient()
-	{
 
-	}
 };

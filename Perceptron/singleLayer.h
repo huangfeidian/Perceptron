@@ -8,6 +8,7 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include "config.h"
 using std::cout;
 using std::endl;
 using std::vector;
@@ -19,31 +20,32 @@ using std::ifstream;
 class singleLayer
 {
 public:
-	std::vector<double> inputValue;
+	vector<vector<double>> inputValue;
 	//current.inputvalue[j]=sum(connection.connectionWeight[i][j]*connection.isConnected[i][j]*pre.outputValue[i]*pre.is_maskerd[i])
-	std::vector<double>  outputValue;
+	vector<vector<double>>  outputValue;
 	//outputValue[i]=current.currentFunc(current.inputValue[i]+current.bias[i])
 	
-	std::vector<double>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
-	std::vector<double>  delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
-	std::vector<double>  bias;// for the bias
-	std::vector<double>  biasGradient;//biasGradient[i]=delta[i]
-	std::vector<double>  batchBiasGradient;//batch sum of biasGradient[i]
+	vector<vector<double>>  outputGradient;//current.outputGradient[i]=sum(next.delta[j]*connection.connectionWeight[i][j]*connection.isConnected[i][j])
+	vector<vector<double>> delta;//delta[i]=outputGradient[i]*currentFunc.diff(outputValue[i])
+	vector<double> bias;// for the bias
+	vector<double> biasGradient;//biasGradient[i]=delta[i]
+
 
 	activateFunc currentFunc;//stands for the activate fucntion and the diffrentiation function
 	const int dim ;//for the dimension
 
 	singleLayer(int inDim, ACTIVATEFUNC currentFuncType) :dim(inDim), currentFunc(currentFuncType), 
-		inputValue(inDim, 0), outputValue(inDim, 0), delta(inDim, 0), outputGradient(inDim, 0), 
-		bias(inDim, 0), biasGradient(inDim, 0), batchBiasGradient(inDim, 0)
+		inputValue(BATCH_SIZE, vector<double>(inDim, 0)), outputValue(BATCH_SIZE, vector<double>(inDim, 0)), delta(BATCH_SIZE, vector<double>(inDim, 0)), 
+		outputGradient(BATCH_SIZE, vector<double>(inDim, 0)),
+		bias(inDim, 0), biasGradient(inDim, 0)
 	{
 		std::default_random_engine dre(clock());
 		std::uniform_real_distribution<double> di(-1.0, 1.0);
+
 		for (int i = 0; i < inDim; i++)
 		{
 			bias[i] = di(dre);
 		}
-	
 		//and other initialtion
 	}
 	
@@ -58,41 +60,50 @@ public:
 	//}
 	virtual void forwardPropagate()
 	{
-		for (int i = 0; i < dim; i++)//we can use sse
+		for (int j = 0; j < BATCH_SIZE; j++)
 		{
-			outputValue[i] = currentFunc(inputValue[i]+bias[i]);
-			inputValue[i] = 0;
+			for (int i = 0; i < dim; i++)//we can use sse
+			{
+				outputValue[j][i] = currentFunc(inputValue[j][i] + bias[i]);
+				inputValue[j][i] = 0;
+			}
 		}
+		
 	}
 	virtual void backPropagate()
 	{
 		for (int i = 0; i < dim; i++)
 		{
+			for (int j = 0; j < BATCH_SIZE; i++)
+			{
 
-			delta[i] = outputGradient[i] * currentFunc.diff(outputValue[i]);
-			biasGradient[i] = delta[i];
-			batchBiasGradient[i] += biasGradient[i];
-			outputGradient[i] = 0;
-		
+				delta[j][i] = outputGradient[j][i] * currentFunc.diff(outputValue[j][i]);
+				biasGradient[i]+= delta[j][i];
+				outputGradient[j][i] = 0;
+
+			}
 		}
+		
 	}
 	virtual void updateBias(double biasStepsize)
 	{
 		for (int i = 0; i < dim; i++)
 		{
-			bias[i] -= batchBiasGradient[i]*biasStepsize;
-			batchBiasGradient[i]=0;//clear the batch sum
-			
-			delta[i] = 0;
+			bias[i] -= biasGradient[i]*biasStepsize;
+			biasGradient[i]=0;//clear the batch sum
 		}
 	}
 	virtual void consoleValueOutput()
 	{
-		for (int i = 0; i < dim; i++)
+		for (int j = 0; j < BATCH_SIZE; j++)
 		{
-			cout << outputValue[i] << ' ';
+			for (int i = 0; i < dim; i++)
+			{
+				cout << outputValue[j][i] << ' ';
+			}
+			cout << endl << "current layer output value" << endl;
 		}
-		cout << endl << "current layer output value" << endl;
+		
 	}
 	virtual void consoleBiasOutput()
 	{
@@ -130,11 +141,14 @@ public:
 	void fileResultOutput()
 	{
 		ofstream outputFile("singleCase.txt", std::ios::app);
-		for (int i = 0; i < dim; i++)
+		for (int j = 0; j < BATCH_SIZE; j++)
 		{
-			outputFile << std::setw(13) << outputValue[i] << ' ';
+			for (int i = 0; i < dim; i++)
+			{
+				outputFile << std::setw(13) << outputValue[j][i] << ' ';
+			}
+			outputFile << endl;
 		}
-		outputFile << endl;
 		outputFile.close();
 	}
 };
