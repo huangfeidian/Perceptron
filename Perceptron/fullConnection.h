@@ -90,7 +90,6 @@ public:
 			}
 			cout << endl;
 		}
-		cout << "current full connection weight" << endl;
 	}
 	void fileWeightOutput(ofstream& outFile)
 	{
@@ -102,7 +101,6 @@ public:
 			}
 			outFile << endl;
 		}
-		outFile << "current full connection weight" << endl;
 	}
 	void loadWeightFromFile(ifstream& inputFile)
 	{

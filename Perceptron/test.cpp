@@ -4,6 +4,9 @@
 #include <ctime>
 #include <cmath>
 #include <iomanip>
+#include <boost\timer.hpp>
+#include <boost\progress.hpp>
+
 using namespace std;
 #define O true
 #define X false
@@ -31,7 +34,8 @@ int main()
 	parse_mnist_images("train-images.idx3-ubyte", trainImages);
 	parse_mnist_labels("t10k-labels.idx1-ubyte", testLabels);
 	parse_mnist_images("t10k-images.idx3-ubyte", testImages);
-	ofstream weightOutFile("weight.txt");
+	ifstream weightInputFile("preWeight.txt");
+	ofstream weightOutputFile("afterWeight.txt");
 	ofstream biasOutFile("bias.txt");
 	ofstream trainResult("trainResult.txt");
 	ifstream tinycnn("LeNet-weights");
@@ -55,54 +59,27 @@ int main()
 	currentNet.addFullLayerAndConnection(120, ACTIVATEFUNC::TANH);
 	currentNet.addFullLayerAndConnection(80, ACTIVATEFUNC::TANH);
 	currentNet.addFullLayerAndConnection(10, ACTIVATEFUNC::TANH);
+	currentNet.loadNetworkFromFile(weightInputFile);
 	int trainCaseNumber=trainLabels.size();
 	int testCaseNumber = testLabels.size();
 	end = clock();
 	cout << (end - begin) << " ms passed in construct the network" << endl;
 	begin = clock();
 	//load the bias and weight from tiny cnn
-	currentNet.allConnections[0]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[1]->loadBiasFromFile(tinycnn);
-	currentNet.allConnections[1]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[2]->loadBiasFromFile(tinycnn);
-	currentNet.allConnections[2]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[3]->loadBiasFromFile(tinycnn);
-	currentNet.allConnections[3]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[4]->loadBiasFromFile(tinycnn);
-	for (int i = 0; i < 16; i++)
-	{
-		for (int j = 0; j <120; j++)
-		{
-
-			char temp[100];
-			tinycnn.getline(temp, 99);
-			for (int k = 0; k < 5; k++)
-			{
-				for (int l = 0; l < 5; l++)
-				{
-					tinycnn >> currentNet.allConnections[4]->feaMapConnect[i]->connectWeight[5 * k+ l][j];
-				}
-				tinycnn.getline(temp, 98);
-			}
-
-		}
-	}
-	currentNet.allLayers[5]->loadBiasFromFile(tinycnn);
-	currentNet.allConnections[5]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[6]->loadBiasFromFile(tinycnn);
-	currentNet.allConnections[6]->loadWeightFromFile(tinycnn);
-	currentNet.allLayers[7]->loadBiasFromFile(tinycnn);
+	
 	//load end
 	int rightResults = 0;
-	double step = 0.015;
+	double step = 0.005;
 	//for (int i = 0; i < 10; i++)
 	//{
 	//	trainResult << std::setw(13) << trainLabels[1][i]<< ' ';
 	//}
 	//trainResult << endl;
-	for (int k = 0; k <5; k++)
+	boost::progress_display currentProgress(trainCaseNumber);
+	boost::timer timeElapsed;
+	for (int k = 0; k <1; k++)
 	{
-	
+		
 		step = step*0.9;
 		rightResults = 0;
 		for (int i = 0; i < trainCaseNumber/BATCH_SIZE; i++)
@@ -110,7 +87,9 @@ int main()
 			currentNet.singleCaseOutput(trainImages, BATCH_SIZE*i);
 			currentNet.singleCaseBackProp(trainLabels, BATCH_SIZE*i);
 			currentNet.updateNetwork(step, step);
+			currentProgress += BATCH_SIZE;
 		}
+		cout << timeElapsed.elapsed() << " s elapsed." << endl;
 		for (int i = 0; i < testCaseNumber / BATCH_SIZE; i++)
 		{
 			currentNet.singleCaseOutput(testImages, BATCH_SIZE*i);
@@ -129,6 +108,8 @@ int main()
 			
 		}
 		cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
+		timeElapsed.restart();
+		currentProgress.restart(trainCaseNumber);
 	}
 	
 	//cout << "after " << i << "rounds" << endl;
@@ -163,5 +144,5 @@ int main()
 	cout << " the whole test precision is " << (1.0*rightResults) / testCaseNumber << endl;
 	end = clock();
 	cout << (end - begin) << " ms passed in training" << endl;
-	currentNet.fileNetworkOutput(weightOutFile);
+	currentNet.fileNetworkOutput(weightOutputFile);
 }

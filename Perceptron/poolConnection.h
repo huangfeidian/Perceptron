@@ -106,7 +106,6 @@ public:
 	void loadWeightFromFile(ifstream& inputFile)
 	{
 		inputFile >> scale;
-		scale = scale / 4;
 		inputFile.get();
 	}
 };
